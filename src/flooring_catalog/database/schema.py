@@ -8,12 +8,14 @@ from psycopg import Connection
 
 
 def migration_sql() -> str:
-    """Load the versioned Step 2 migration bundled with the package."""
+    """Load all bundled idempotent migrations in filename order."""
 
-    migration = files("flooring_catalog.database.migrations").joinpath(
-        "001_create_catalog_products.sql"
+    migrations = files("flooring_catalog.database.migrations")
+    sql_files = sorted(
+        (resource for resource in migrations.iterdir() if resource.name.endswith(".sql")),
+        key=lambda resource: resource.name,
     )
-    return migration.read_text(encoding="utf-8")
+    return "\n\n".join(resource.read_text(encoding="utf-8") for resource in sql_files)
 
 
 def apply_schema(connection: Connection) -> None:
@@ -26,4 +28,3 @@ def apply_schema(connection: Connection) -> None:
     except Exception:
         connection.rollback()
         raise
-

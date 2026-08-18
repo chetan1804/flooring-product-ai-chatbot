@@ -32,9 +32,11 @@ def test_invalid_database_settings_are_rejected(
 def test_migration_prepares_pgvector_jsonb_constraints_and_indexes() -> None:
     sql = migration_sql()
     assert "CREATE EXTENSION IF NOT EXISTS vector" in sql
+    assert "ADD COLUMN IF NOT EXISTS embedding vector(1536)" in sql
+    assert "vector_cosine_ops" in sql
+    assert "invalidate_catalog_product_embedding" in sql
     assert "metadata JSONB NOT NULL" in sql
     assert "CHECK (lower(btrim(status)) = 'active')" in sql
     assert "CHECK (btrim(swatch) <> '')" in sql
     assert "USING GIN (metadata)" in sql
     assert "WHERE price IS NOT NULL" in sql
-

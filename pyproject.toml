@@ -8,7 +8,10 @@ version = "0.1.0"
 description = "Catalog tooling for an AI-powered flooring recommendation chatbot"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["psycopg[binary]>=3.2,<4"]
+dependencies = [
+  "openai>=1.100,<3",
+  "psycopg[binary]>=3.2,<4",
+]
 
 [project.optional-dependencies]
 dev = ["pytest>=8,<10", "ruff>=0.6,<1"]
@@ -16,6 +19,8 @@ dev = ["pytest>=8,<10", "ruff>=0.6,<1"]
 [project.scripts]
 flooring-profile = "flooring_catalog.cli:main"
 flooring-ingest = "flooring_catalog.ingestion_cli:main"
+flooring-embed = "flooring_catalog.embedding_cli:main"
+flooring-search = "flooring_catalog.search_cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/flooring_catalog"]

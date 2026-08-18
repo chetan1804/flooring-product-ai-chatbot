@@ -7,7 +7,10 @@ import psycopg
 import pytest
 
 from flooring_catalog.database.schema import apply_schema
+from flooring_catalog.embeddings import EMBEDDING_DIMENSIONS, vector_literal
 from flooring_catalog.ingestion import ingest_catalog
+from flooring_catalog.search.models import SearchFilters
+from flooring_catalog.search.repository import ProductSearchRepository
 
 pytestmark = pytest.mark.integration
 
@@ -30,6 +33,20 @@ def test_real_postgres_schema_and_upsert(tmp_path) -> None:
         second = ingest_catalog(connection, path, batch_size=10)
         with connection.cursor() as cursor:
             cursor.execute(
+                "UPDATE catalog_products SET embedding = %s::vector, embedding_model = %s "
+                "WHERE sku = %s",
+                (vector_literal([1.0] + [0.0] * (EMBEDDING_DIMENSIONS - 1)),
+                 "test-model", "CODEX_STEP2_TEST"),
+            )
+        connection.commit()
+        semantic = ProductSearchRepository(connection).semantic_search(
+            [1.0] + [0.0] * (EMBEDDING_DIMENSIONS - 1),
+            "test-model",
+            SearchFilters(z_prod_types=("lvt",)),
+            limit=5,
+        )
+        with connection.cursor() as cursor:
+            cursor.execute(
                 "SELECT count(*), max(price) FROM catalog_products WHERE sku = %s",
                 ("CODEX_STEP2_TEST",),
             )
@@ -41,4 +58,5 @@ def test_real_postgres_schema_and_upsert(tmp_path) -> None:
     assert second.upserted_records == 1
     assert count == 1
     assert price is None
-
+    assert semantic[0].sku == "CODEX_STEP2_TEST"
+    assert semantic[0].semantic_similarity == pytest.approx(1.0)
