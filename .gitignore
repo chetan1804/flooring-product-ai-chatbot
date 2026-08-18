@@ -5,8 +5,10 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .coverage
+.env
+.env.*
+!.env.example
 
 # Product catalogs are external inputs and must never be committed.
 data/
 products.json
-
