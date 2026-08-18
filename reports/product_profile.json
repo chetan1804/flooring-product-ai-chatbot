@@ -1,0 +1,1525 @@
+{
+  "source_file": "products.json",
+  "total_products": 61508,
+  "discovered_fields": [
+    "application",
+    "application_facet",
+    "b2b_sku",
+    "backing",
+    "backing_facet",
+    "best_value_facet",
+    "brand",
+    "brand_collection",
+    "brand_facet",
+    "call_for_price",
+    "call_for_price_no_checkout",
+    "carton_sq_ft",
+    "clearance_facet",
+    "client_code",
+    "collection_facet",
+    "collection_name",
+    "color",
+    "color_code",
+    "color_facet",
+    "color_variation",
+    "color_variation_facet",
+    "construction",
+    "construction_facet",
+    "core",
+    "core_thickness",
+    "country",
+    "country_facet",
+    "custom",
+    "dealer_brand",
+    "description",
+    "design",
+    "design_style",
+    "edge",
+    "edge_facet",
+    "face_weight",
+    "featured",
+    "features",
+    "features_facet",
+    "fiber",
+    "finish",
+    "finish_facet",
+    "gallery_images",
+    "gloss",
+    "gloss_facet",
+    "in_stock",
+    "install_location",
+    "installation",
+    "installation_facet",
+    "installation_pdf",
+    "length",
+    "lifestyle",
+    "lifestyle_facet",
+    "location",
+    "location_facet",
+    "look",
+    "look_facet",
+    "looks_like_facet",
+    "made_in_the_usa",
+    "manufacturer",
+    "material",
+    "material_facet",
+    "msrp",
+    "msrp_unit_price",
+    "name",
+    "pattern",
+    "pattern_repeat",
+    "position",
+    "price",
+    "price_cut",
+    "price_facet",
+    "price_promo",
+    "price_roll",
+    "price_unit",
+    "radiant_heat",
+    "rfms_color_seq_num",
+    "rfms_qty",
+    "roomvo_key",
+    "sales_facet",
+    "sample_available_facet",
+    "search_only",
+    "shade",
+    "shade_facet",
+    "shade_variation",
+    "shape",
+    "shape_facet",
+    "short_description",
+    "size",
+    "size_facet",
+    "sku",
+    "sku_display",
+    "sku_manufacturer",
+    "species",
+    "species_facet",
+    "status",
+    "style",
+    "style_code",
+    "style_facet",
+    "sub_brand",
+    "sub_brand_facet",
+    "sub_type",
+    "surface_texture_facet",
+    "surface_type",
+    "swatch",
+    "thickness",
+    "thickness_facet",
+    "unit_in_cartons",
+    "upid",
+    "url_key",
+    "usage",
+    "visualizable",
+    "warranty_text",
+    "waterproof",
+    "wear_layer",
+    "wear_layer_thickness",
+    "wear_layer_thickness_facet",
+    "weight",
+    "width",
+    "width_facet",
+    "z_prod_type"
+  ],
+  "sanitized_sample": {
+    "country": "USA",
+    "featured": "No",
+    "clearance_facet": "No",
+    "unit_in_cartons": 0,
+    "call_for_price_no_checkout": "No",
+    "thickness": "0.169 in",
+    "in_stock": 0,
+    "brand_collection": "Shaw Floors Park Estates",
+    "pattern_repeat": "0.38 in W X 0.75 in L",
+    "best_value_facet": "No",
+    "price": 0.0,
+    "face_weight": "28 oz/yd²",
+    "price_cut": 0.0,
+    "sku": "00225_032NF",
+    "brand": "Shaw Floors",
+    "color_code": "00225",
+    "radiant_heat": "No",
+    "warranty_text": "Nfa Anso",
+    "fiber": "100% ANSO® NYLON",
+    "price_promo": 0,
+    "msrp_unit_price": 0.0,
+    "application_facet": "Residential",
+    "call_for_price": "No",
+    "made_in_the_usa": "No",
+    "visualizable": false,
+    "size": "12 ft",
+    "name": "Shaw Floors Park Estates Butterscotch",
+    "brand_facet": "Shaw Floors",
+    "search_only": false,
+    "style": "Patterned Loop",
+    "position": 1,
+    "collection_name": "Park Estates",
+    "style_facet": "Loop/Berber",
+    "status": "active",
+    "z_prod_type": "carpet",
+    "color": "Butterscotch",
+    "swatch": "mmllc-images.s3.amazonaws.com/shaw/mt232_00225.jpg",
+    "sku_display": "00225_032NF",
+    "manufacturer": "Shaw",
+    "rfms_qty": 0.0,
+    "backing": "Polypropylene, Classicbac",
+    "sub_type": "Carpet",
+    "design": "Park Estates",
+    "msrp": 0.0,
+    "construction": "Patterned Loop",
+    "waterproof": "No",
+    "roomvo_key": "shaw-00225_032NF",
+    "sales_facet": "No",
+    "color_facet": "Browns/Tans",
+    "backing_facet": "ClassicBac",
+    "sku_manufacturer": "00225_032NF",
+    "sample_available_facet": "No",
+    "style_code": "032NF",
+    "collection_facet": "Park Estates",
+    "url_key": "/flooring/carpet/products/shaw-floors-park-estates-butterscotch-00225_032nf",
+    "price_unit": "SF",
+    "application": "Residential",
+    "material": "100% ANSO® NYLON",
+    "width": "12 ft",
+    "price_roll": 0.0,
+    "client_code": "all",
+    "gallery_images": "mmllc-images.s3.amazonaws.com/shaw/mt232_00225_rm1.jpg"
+  },
+  "z_prod_type_distribution": {
+    "carpet": 47645,
+    "hardwood": 1711,
+    "laminate": 547,
+    "lvt": 3362,
+    "tile": 8243
+  },
+  "status_distribution": {
+    "active": 61508
+  },
+  "active_products": 61508,
+  "rejected_status_not_active": 0,
+  "products_with_valid_swatch": 58804,
+  "rejected_swatch_empty_or_missing": 2704,
+  "eligible_products": 58804,
+  "field_statistics": {
+    "application": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "application_facet": {
+      "present": 60528,
+      "missing_key": 980,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 980,
+      "observed_types": {
+        "string": 60528
+      }
+    },
+    "b2b_sku": {
+      "present": 15715,
+      "missing_key": 45793,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 45793,
+      "observed_types": {
+        "string": 15715
+      }
+    },
+    "backing": {
+      "present": 39708,
+      "missing_key": 21800,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 21800,
+      "observed_types": {
+        "string": 39708
+      }
+    },
+    "backing_facet": {
+      "present": 11790,
+      "missing_key": 49718,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 49718,
+      "observed_types": {
+        "string": 11790
+      }
+    },
+    "best_value_facet": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "brand": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "brand_collection": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "brand_facet": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "call_for_price": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "call_for_price_no_checkout": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "carton_sq_ft": {
+      "present": 6329,
+      "missing_key": 55179,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 55179,
+      "observed_types": {
+        "string": 6329
+      }
+    },
+    "clearance_facet": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "client_code": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "collection_facet": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "collection_name": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "color": {
+      "present": 61390,
+      "missing_key": 118,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 118,
+      "observed_types": {
+        "string": 61390
+      }
+    },
+    "color_code": {
+      "present": 52061,
+      "missing_key": 9447,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 9447,
+      "observed_types": {
+        "string": 52061
+      }
+    },
+    "color_facet": {
+      "present": 46824,
+      "missing_key": 14684,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 14684,
+      "observed_types": {
+        "string": 46824
+      }
+    },
+    "color_variation": {
+      "present": 13272,
+      "missing_key": 48236,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 48236,
+      "observed_types": {
+        "string": 13272
+      }
+    },
+    "color_variation_facet": {
+      "present": 585,
+      "missing_key": 60923,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 60923,
+      "observed_types": {
+        "string": 585
+      }
+    },
+    "construction": {
+      "present": 40457,
+      "missing_key": 21051,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 21051,
+      "observed_types": {
+        "string": 40457
+      }
+    },
+    "construction_facet": {
+      "present": 1013,
+      "missing_key": 60495,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 60495,
+      "observed_types": {
+        "string": 1013
+      }
+    },
+    "core": {
+      "present": 523,
+      "missing_key": 60985,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 60985,
+      "observed_types": {
+        "string": 523
+      }
+    },
+    "core_thickness": {
+      "present": 31,
+      "missing_key": 61477,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 61477,
+      "observed_types": {
+        "string": 31
+      }
+    },
+    "country": {
+      "present": 28562,
+      "missing_key": 32946,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 32946,
+      "observed_types": {
+        "string": 28562
+      }
+    },
+    "country_facet": {
+      "present": 1475,
+      "missing_key": 60033,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 60033,
+      "observed_types": {
+        "string": 1475
+      }
+    },
+    "custom": {
+      "present": 22,
+      "missing_key": 61486,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 61486,
+      "observed_types": {
+        "string": 22
+      }
+    },
+    "dealer_brand": {
+      "present": 7,
+      "missing_key": 61501,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 61501,
+      "observed_types": {
+        "string": 7
+      }
+    },
+    "description": {
+      "present": 25361,
+      "missing_key": 36147,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 36147,
+      "observed_types": {
+        "string": 25361
+      }
+    },
+    "design": {
+      "present": 35342,
+      "missing_key": 26166,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 26166,
+      "observed_types": {
+        "string": 35342
+      }
+    },
+    "design_style": {
+      "present": 156,
+      "missing_key": 61352,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 61352,
+      "observed_types": {
+        "string": 156
+      }
+    },
+    "edge": {
+      "present": 4231,
+      "missing_key": 57277,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 57277,
+      "observed_types": {
+        "string": 4231
+      }
+    },
+    "edge_facet": {
+      "present": 1912,
+      "missing_key": 59596,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 59596,
+      "observed_types": {
+        "string": 1912
+      }
+    },
+    "face_weight": {
+      "present": 29737,
+      "missing_key": 31771,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 31771,
+      "observed_types": {
+        "string": 29737
+      }
+    },
+    "featured": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "features": {
+      "present": 90,
+      "missing_key": 61418,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 61418,
+      "observed_types": {
+        "string": 90
+      }
+    },
+    "features_facet": {
+      "present": 1,
+      "missing_key": 61507,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 61507,
+      "observed_types": {
+        "string": 1
+      }
+    },
+    "fiber": {
+      "present": 14790,
+      "missing_key": 46718,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 46718,
+      "observed_types": {
+        "string": 14790
+      }
+    },
+    "finish": {
+      "present": 4452,
+      "missing_key": 57056,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 57056,
+      "observed_types": {
+        "string": 4452
+      }
+    },
+    "finish_facet": {
+      "present": 1711,
+      "missing_key": 59797,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 59797,
+      "observed_types": {
+        "string": 1711
+      }
+    },
+    "gallery_images": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 31873,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 31873,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "gloss": {
+      "present": 994,
+      "missing_key": 60514,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 60514,
+      "observed_types": {
+        "string": 994
+      }
+    },
+    "gloss_facet": {
+      "present": 1212,
+      "missing_key": 60296,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 60296,
+      "observed_types": {
+        "string": 1212
+      }
+    },
+    "in_stock": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 61469,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "integer": 61508
+      }
+    },
+    "install_location": {
+      "present": 3684,
+      "missing_key": 57824,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 57824,
+      "observed_types": {
+        "string": 3684
+      }
+    },
+    "installation": {
+      "present": 5107,
+      "missing_key": 56401,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 56401,
+      "observed_types": {
+        "string": 5107
+      }
+    },
+    "installation_facet": {
+      "present": 2860,
+      "missing_key": 58648,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 58648,
+      "observed_types": {
+        "string": 2860
+      }
+    },
+    "installation_pdf": {
+      "present": 1185,
+      "missing_key": 60323,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 60323,
+      "observed_types": {
+        "string": 1185
+      }
+    },
+    "length": {
+      "present": 6338,
+      "missing_key": 55170,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 55170,
+      "observed_types": {
+        "string": 6338
+      }
+    },
+    "lifestyle": {
+      "present": 90,
+      "missing_key": 61418,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 61418,
+      "observed_types": {
+        "string": 90
+      }
+    },
+    "lifestyle_facet": {
+      "present": 1,
+      "missing_key": 61507,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 61507,
+      "observed_types": {
+        "string": 1
+      }
+    },
+    "location": {
+      "present": 3684,
+      "missing_key": 57824,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 57824,
+      "observed_types": {
+        "string": 3684
+      }
+    },
+    "location_facet": {
+      "present": 2687,
+      "missing_key": 58821,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 58821,
+      "observed_types": {
+        "string": 2687
+      }
+    },
+    "look": {
+      "present": 26239,
+      "missing_key": 35269,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 35269,
+      "observed_types": {
+        "string": 26239
+      }
+    },
+    "look_facet": {
+      "present": 1863,
+      "missing_key": 59645,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 59645,
+      "observed_types": {
+        "string": 1863
+      }
+    },
+    "looks_like_facet": {
+      "present": 2565,
+      "missing_key": 58943,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 58943,
+      "observed_types": {
+        "string": 2565
+      }
+    },
+    "made_in_the_usa": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "manufacturer": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "material": {
+      "present": 49507,
+      "missing_key": 12001,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 12001,
+      "observed_types": {
+        "string": 49507
+      }
+    },
+    "material_facet": {
+      "present": 9692,
+      "missing_key": 51816,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 51816,
+      "observed_types": {
+        "string": 9692
+      }
+    },
+    "msrp": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 61508,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "number": 61508
+      }
+    },
+    "msrp_unit_price": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 57390,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "number": 61508
+      }
+    },
+    "name": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "pattern": {
+      "present": 8568,
+      "missing_key": 52940,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 52940,
+      "observed_types": {
+        "string": 8568
+      }
+    },
+    "pattern_repeat": {
+      "present": 13605,
+      "missing_key": 47903,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 47903,
+      "observed_types": {
+        "string": 13605
+      }
+    },
+    "position": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "integer": 61508
+      }
+    },
+    "price": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 57390,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "number": 61508
+      }
+    },
+    "price_cut": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 61508,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "number": 61508
+      }
+    },
+    "price_facet": {
+      "present": 13863,
+      "missing_key": 47645,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 47645,
+      "observed_types": {
+        "string": 13863
+      }
+    },
+    "price_promo": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 61508,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "integer": 61508
+      }
+    },
+    "price_roll": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 61508,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "number": 61508
+      }
+    },
+    "price_unit": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "radiant_heat": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "rfms_color_seq_num": {
+      "present": 21275,
+      "missing_key": 40233,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 40233,
+      "observed_types": {
+        "string": 21275
+      }
+    },
+    "rfms_qty": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 61508,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "number": 61508
+      }
+    },
+    "roomvo_key": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "sales_facet": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "sample_available_facet": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "search_only": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "boolean": 61508
+      }
+    },
+    "shade": {
+      "present": 743,
+      "missing_key": 60765,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 60765,
+      "observed_types": {
+        "string": 743
+      }
+    },
+    "shade_facet": {
+      "present": 717,
+      "missing_key": 60791,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 60791,
+      "observed_types": {
+        "string": 717
+      }
+    },
+    "shade_variation": {
+      "present": 2051,
+      "missing_key": 59457,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 59457,
+      "observed_types": {
+        "string": 2051
+      }
+    },
+    "shape": {
+      "present": 5130,
+      "missing_key": 56378,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 56378,
+      "observed_types": {
+        "string": 5130
+      }
+    },
+    "shape_facet": {
+      "present": 4704,
+      "missing_key": 56804,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 56804,
+      "observed_types": {
+        "string": 4704
+      }
+    },
+    "short_description": {
+      "present": 2432,
+      "missing_key": 59076,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 59076,
+      "observed_types": {
+        "string": 2432
+      }
+    },
+    "size": {
+      "present": 31618,
+      "missing_key": 29890,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 29890,
+      "observed_types": {
+        "string": 31618
+      }
+    },
+    "size_facet": {
+      "present": 7701,
+      "missing_key": 53807,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 53807,
+      "observed_types": {
+        "string": 7701
+      }
+    },
+    "sku": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "sku_display": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "sku_manufacturer": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "species": {
+      "present": 3131,
+      "missing_key": 58377,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 58377,
+      "observed_types": {
+        "string": 3131
+      }
+    },
+    "species_facet": {
+      "present": 2565,
+      "missing_key": 58943,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 58943,
+      "observed_types": {
+        "string": 2565
+      }
+    },
+    "status": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "style": {
+      "present": 13819,
+      "missing_key": 47689,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 47689,
+      "observed_types": {
+        "string": 13819
+      }
+    },
+    "style_code": {
+      "present": 43105,
+      "missing_key": 18403,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 18403,
+      "observed_types": {
+        "string": 43105
+      }
+    },
+    "style_facet": {
+      "present": 10462,
+      "missing_key": 51046,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 51046,
+      "observed_types": {
+        "string": 10462
+      }
+    },
+    "sub_brand": {
+      "present": 15715,
+      "missing_key": 45793,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 45793,
+      "observed_types": {
+        "string": 15715
+      }
+    },
+    "sub_brand_facet": {
+      "present": 15715,
+      "missing_key": 45793,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 45793,
+      "observed_types": {
+        "string": 15715
+      }
+    },
+    "sub_type": {
+      "present": 35681,
+      "missing_key": 25827,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 25827,
+      "observed_types": {
+        "string": 35681
+      }
+    },
+    "surface_texture_facet": {
+      "present": 1494,
+      "missing_key": 60014,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 60014,
+      "observed_types": {
+        "string": 1494
+      }
+    },
+    "surface_type": {
+      "present": 17676,
+      "missing_key": 43832,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 43832,
+      "observed_types": {
+        "string": 17676
+      }
+    },
+    "swatch": {
+      "present": 58804,
+      "missing_key": 2704,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 2704,
+      "observed_types": {
+        "string": 58804
+      }
+    },
+    "thickness": {
+      "present": 25696,
+      "missing_key": 35812,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 35812,
+      "observed_types": {
+        "string": 25696
+      }
+    },
+    "thickness_facet": {
+      "present": 5928,
+      "missing_key": 55580,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 55580,
+      "observed_types": {
+        "string": 5928
+      }
+    },
+    "unit_in_cartons": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 61508,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "integer": 61508
+      }
+    },
+    "upid": {
+      "present": 7132,
+      "missing_key": 54376,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 54376,
+      "observed_types": {
+        "string": 7132
+      }
+    },
+    "url_key": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "usage": {
+      "present": 702,
+      "missing_key": 60806,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 60806,
+      "observed_types": {
+        "string": 702
+      }
+    },
+    "visualizable": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "boolean": 61508
+      }
+    },
+    "warranty_text": {
+      "present": 20001,
+      "missing_key": 41507,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 41507,
+      "observed_types": {
+        "string": 20001
+      }
+    },
+    "waterproof": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    },
+    "wear_layer": {
+      "present": 1423,
+      "missing_key": 60085,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 60085,
+      "observed_types": {
+        "string": 1423
+      }
+    },
+    "wear_layer_thickness": {
+      "present": 1849,
+      "missing_key": 59659,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 59659,
+      "observed_types": {
+        "string": 1849
+      }
+    },
+    "wear_layer_thickness_facet": {
+      "present": 1542,
+      "missing_key": 59966,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 59966,
+      "observed_types": {
+        "string": 1542
+      }
+    },
+    "weight": {
+      "present": 2700,
+      "missing_key": 58808,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 58808,
+      "observed_types": {
+        "string": 2700
+      }
+    },
+    "width": {
+      "present": 36961,
+      "missing_key": 24547,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 24547,
+      "observed_types": {
+        "string": 36961
+      }
+    },
+    "width_facet": {
+      "present": 1460,
+      "missing_key": 60048,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 60048,
+      "observed_types": {
+        "string": 1460
+      }
+    },
+    "z_prod_type": {
+      "present": 61508,
+      "missing_key": 0,
+      "null": 0,
+      "blank": 0,
+      "numeric_zero": 0,
+      "total_missing_or_empty": 0,
+      "observed_types": {
+        "string": 61508
+      }
+    }
+  },
+  "sku_statistics": {
+    "key": "sku",
+    "present": 61508,
+    "missing_key": 0,
+    "empty": 0,
+    "unique_non_empty": 61508,
+    "duplicate_records": 0,
+    "duplicate_values": 0,
+    "top_duplicates": []
+  }
+}
