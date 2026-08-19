@@ -8,6 +8,7 @@ from enum import StrEnum
 from pydantic import BaseModel, ConfigDict, Field
 
 from flooring_catalog.ranking.models import RankingScore
+from flooring_catalog.recommendations.models import RecommendationCard
 from flooring_catalog.requirements.models import (
     NormalizedRequirements,
     TrafficLevel,
@@ -191,3 +192,4 @@ class AgentTurnResult(BaseModel):
     preferences: ConversationPreferences
     candidate_skus: tuple[str, ...] = ()
     ranked_candidates: tuple[AgentRankedCandidate, ...] = ()
+    recommendations: tuple[RecommendationCard, ...] = ()

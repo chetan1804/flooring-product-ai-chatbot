@@ -20,6 +20,7 @@ from flooring_catalog.agent.models import (
     ConversationPreferences,
 )
 from flooring_catalog.ranking import FlooringRecommendationRanker, RankedCandidate
+from flooring_catalog.recommendations.models import RecommendationCard
 from flooring_catalog.requirements.models import NormalizedRequirements
 from flooring_catalog.requirements.service import RequirementExtractionService
 from flooring_catalog.search.models import HybridCandidate, SearchFilters
@@ -39,6 +40,15 @@ class CandidateRankingService(Protocol):
         """Return the best candidates in deterministic ranking order."""
 
 
+class RecommendationPresentationService(Protocol):
+    def build(
+        self,
+        ranked_candidates: list[RankedCandidate],
+        preferences: ConversationPreferences,
+    ) -> list[RecommendationCard]:
+        """Build catalog-backed cards using a registered client domain."""
+
+
 class FlooringAgentState(TypedDict, total=False):
     user_message: str
     messages: Annotated[list[dict[str, str]], add]
@@ -50,6 +60,7 @@ class FlooringAgentState(TypedDict, total=False):
     assistant_message: str
     candidate_skus: list[str]
     ranked_candidates: list[dict[str, Any]]
+    recommendations: list[dict[str, Any]]
     search_query: str
 
 
@@ -58,6 +69,7 @@ def build_flooring_agent_graph(
     search_service: CandidateSearchService,
     catalog_product_types: tuple[str, ...],
     *,
+    recommendation_service: RecommendationPresentationService,
     ranking_service: CandidateRankingService | None = None,
     checkpointer: Any | None = None,
 ) -> Any:
@@ -74,6 +86,7 @@ def build_flooring_agent_graph(
             "latest_requirements": result.normalized.model_dump(mode="json"),
             "candidate_skus": [],
             "ranked_candidates": [],
+            "recommendations": [],
         }
 
     def merge_preferences(state: FlooringAgentState) -> dict[str, Any]:
@@ -121,6 +134,10 @@ def build_flooring_agent_graph(
             ).model_dump(mode="json")
             for item in ranked
         ]
+        recommendations = [
+            card.model_dump(mode="json")
+            for card in recommendation_service.build(ranked, preferences)
+        ]
         if candidate_skus:
             action = AgentAction.CANDIDATES
             message = f"I ranked {len(candidate_skus)} matching products."
@@ -135,6 +152,7 @@ def build_flooring_agent_graph(
             ],
             "candidate_skus": candidate_skus,
             "ranked_candidates": ranked_candidates,
+            "recommendations": recommendations,
             "search_query": query,
         }
 
@@ -181,6 +199,10 @@ class FlooringConversationAgent:
             ranked_candidates=tuple(
                 AgentRankedCandidate.model_validate(item)
                 for item in state.get("ranked_candidates", [])
+            ),
+            recommendations=tuple(
+                RecommendationCard.model_validate(item)
+                for item in state.get("recommendations", [])
             ),
         )
 

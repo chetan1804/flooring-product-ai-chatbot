@@ -9,6 +9,7 @@ from flooring_catalog.agent import FlooringConversationAgent, build_flooring_age
 from flooring_catalog.config import load_local_environment
 from flooring_catalog.database import DatabaseSettings, database_connection
 from flooring_catalog.embeddings import EmbeddingSettings, OpenAIEmbeddingProvider
+from flooring_catalog.recommendations import ClientDomainSettings, RecommendationCardService
 from flooring_catalog.requirements import (
     OpenAIRequirementExtractor,
     RequirementExtractionService,
@@ -27,6 +28,7 @@ def main() -> int:
     database_settings = DatabaseSettings.from_env()
     extraction_settings = RequirementExtractionSettings.from_env()
     embedding_settings = EmbeddingSettings.from_env()
+    client_settings = ClientDomainSettings.from_env()
     extractor = OpenAIRequirementExtractor(extraction_settings)
     embedding_provider = OpenAIEmbeddingProvider(embedding_settings)
 
@@ -40,6 +42,9 @@ def main() -> int:
             extraction_service,
             search_service,
             vocabulary.product_types,
+            recommendation_service=RecommendationCardService(
+                client_settings.client_domain
+            ),
         )
         agent = FlooringConversationAgent(graph)
 
@@ -57,8 +62,11 @@ def main() -> int:
                 continue
             result = agent.respond(thread_id=args.thread_id, user_message=message)
             print(f"Assistant: {result.message}")
-            for position, candidate in enumerate(result.ranked_candidates, start=1):
-                print(f"  {position}. {candidate.sku} (score: {candidate.score.total:.3f})")
+            for position, card in enumerate(result.recommendations, start=1):
+                price = f"${card.price}" if card.price is not None else "price unavailable"
+                print(f"  {position}. {card.name} ({card.sku}, {price})")
+                print(f"     {card.reasons[0]}")
+                print(f"     {card.product_url}")
     return 0
 
 

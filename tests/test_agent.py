@@ -7,6 +7,7 @@ import pytest
 from flooring_catalog.agent import FlooringConversationAgent, build_flooring_agent_graph
 from flooring_catalog.agent.clarification import MissingInformationDetector
 from flooring_catalog.agent.models import AgentAction, ConversationPreferences
+from flooring_catalog.recommendations import RecommendationCardService
 from flooring_catalog.requirements.models import (
     CustomerRequirements,
     NormalizedRequirements,
@@ -121,6 +122,7 @@ def test_graph_remembers_preferences_and_does_not_repeat_questions() -> None:
             extraction,  # type: ignore[arg-type]
             search,
             ("carpet", "hardwood", "laminate", "lvt", "tile"),
+            recommendation_service=RecommendationCardService("https://shop.example"),
         )
     )
 
@@ -147,6 +149,8 @@ def test_graph_remembers_preferences_and_does_not_repeat_questions() -> None:
     assert third.candidate_skus == ("SKU-1", "SKU-2")
     assert [candidate.sku for candidate in third.ranked_candidates] == ["SKU-1", "SKU-2"]
     assert all(candidate.score.components for candidate in third.ranked_candidates)
+    assert [card.sku for card in third.recommendations] == ["SKU-1", "SKU-2"]
+    assert third.recommendations[0].product_url == "https://shop.example/?s=SKU-1"
     assert len(search.calls) == 1
     query, filters = search.calls[0]
     assert query == "flooring type: lvt; room: kitchen; color: Light Oak"
@@ -171,6 +175,7 @@ def test_checkpointer_isolates_conversation_threads() -> None:
             extraction,  # type: ignore[arg-type]
             FakeSearchService(),
             ("lvt", "tile"),
+            recommendation_service=RecommendationCardService("https://shop.example"),
         )
     )
     agent.respond(thread_id="thread-a", user_message="Kitchen")
@@ -195,6 +200,7 @@ def test_graph_does_not_repeat_a_declined_clarification() -> None:
             extraction,  # type: ignore[arg-type]
             search,
             ("lvt", "tile"),
+            recommendation_service=RecommendationCardService("https://shop.example"),
         )
     )
     first = agent.respond(thread_id="declined", user_message="LVT for my kitchen")
@@ -219,6 +225,7 @@ def test_no_results_are_returned_without_inventing_products() -> None:
             extraction,  # type: ignore[arg-type]
             FakeSearchService(skus=()),
             ("lvt",),
+            recommendation_service=RecommendationCardService("https://shop.example"),
         )
     )
     result = agent.respond(thread_id="none", user_message="Complete")
@@ -234,6 +241,7 @@ def test_agent_validates_invocation(thread_id: str, message: str) -> None:
             FakeExtractionService({}),  # type: ignore[arg-type]
             FakeSearchService(),
             ("lvt",),
+            recommendation_service=RecommendationCardService("https://shop.example"),
         )
     )
     with pytest.raises(ValueError):

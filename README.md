@@ -1,9 +1,10 @@
 # AI-Powered Flooring Product Recommendation Chatbot
 
-This repository currently implements Steps 1 through 6: bounded-memory catalog profiling,
+This repository currently implements Steps 1 through 7: bounded-memory catalog profiling,
 PostgreSQL ingestion, embeddings, hybrid retrieval, and Pydantic-validated AI customer
 requirement extraction, plus a LangGraph conversational agent and deterministic flooring
-business-rule ranking. Recommendation cards, API, and widget functionality are deferred.
+business-rule ranking with clickable catalog-backed recommendation cards. API and widget
+functionality are deferred.
 
 ## Setup
 
@@ -147,15 +148,16 @@ Assistant: What type of flooring would you prefer? Available options include ...
 You: Luxury vinyl.
 Assistant: Do you have a preferred color, shade, style, material, or overall look?
 You: Light natural oak.
-Assistant: I found 5 catalog candidates matching the preferences collected so far.
-Candidate SKUs: ...
+Assistant: I ranked 5 matching products.
+  1. Coastal Oak (ABC123, $4.75)
+     Matches your requested color: Light Oak.
+     https://exampleflooring.com/?s=ABC123
 ```
 
 The command uses LangGraph's in-memory checkpointer, so thread history survives turns
 within that running process and resets when it exits. The graph accepts an injected
 checkpointer for a durable production deployment. Candidate retrieval in this step is
-followed by deterministic Step 6 ranking. Product cards and customer-facing explanations
-remain Step 7.
+followed by deterministic Step 6 ranking and Step 7 recommendation presentation.
 
 ## Flooring business rules and ranking
 
@@ -186,3 +188,26 @@ Run the interactive agent to see ordered SKUs and final scores:
 ```bash
 flooring-chat --thread-id ranking-demo
 ```
+
+## Recommendation cards and product links
+
+Set the registered storefront origin in server-side configuration. It must be an HTTP(S)
+origin without a path, query, fragment, or embedded credentials:
+
+```bash
+CLIENT_DOMAIN=https://exampleflooring.com
+```
+
+The application—not the LLM—URL-encodes each catalog SKU and generates links in this
+fixed format:
+
+```text
+https://exampleflooring.com/?s=ABC123
+```
+
+Each recommendation DTO includes the catalog name, SKU, swatch, gallery image when
+available, positive price when available, an allow-listed set of important catalog
+attributes, deterministic factual reasons, product URL, and its explainable ranking
+score. Missing product values remain absent instead of being invented. The current
+single registered domain is a server setting; Step 9 will introduce multi-site lookup by
+`site_code`.
