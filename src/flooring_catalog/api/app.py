@@ -23,26 +23,32 @@ from flooring_catalog.api.models import (
 )
 from flooring_catalog.api.runtime import RuntimeResources, build_runtime_resources
 from flooring_catalog.api.sessions import InMemorySessionStore
-from flooring_catalog.api.settings import ApiSettings
+from flooring_catalog.sites import SiteConfig, SiteRegistry
 
 LOGGER = logging.getLogger(__name__)
 WIDGET_PATH = Path(__file__).parent.parent / "static" / "widget.js"
 
 
 class ConversationAgent(Protocol):
-    def respond(self, *, thread_id: str, user_message: str) -> AgentTurnResult:
+    def respond(
+        self,
+        *,
+        thread_id: str,
+        user_message: str,
+        client_domain: str | None = None,
+    ) -> AgentTurnResult:
         """Run one validated conversation turn."""
 
 
 def create_app(
     *,
     agent: ConversationAgent | None = None,
-    settings: ApiSettings | None = None,
+    sites: SiteRegistry | None = None,
     sessions: InMemorySessionStore | None = None,
 ) -> FastAPI:
     """Create an API; production resources are lazy and tests can inject fakes."""
 
-    api_settings = settings or ApiSettings.from_env()
+    site_registry = sites or SiteRegistry.from_env()
     session_store = sessions or InMemorySessionStore()
     runtime: RuntimeResources | None = None
 
@@ -63,10 +69,10 @@ def create_app(
         version="0.1.0",
         lifespan=lifespan,
     )
-    if api_settings.cors_allow_origins:
+    if site_registry.allowed_origins:
         app.add_middleware(
             CORSMiddleware,
-            allow_origins=list(api_settings.cors_allow_origins),
+            allow_origins=list(site_registry.allowed_origins),
             allow_credentials=False,
             allow_methods=["GET", "POST"],
             allow_headers=["Content-Type"],
@@ -76,14 +82,25 @@ def create_app(
     def health() -> HealthResponse:
         return HealthResponse()
 
-    @app.get("/api/config/{site_code}", response_model=WidgetConfigResponse)
-    def widget_config(site_code: str) -> WidgetConfigResponse:
-        if site_code != api_settings.site_code:
+    def registered_site(site_code: str) -> SiteConfig:
+        site = site_registry.get(site_code)
+        if site is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown site")
+        return site
+
+    def validate_origin(request: Request, site: SiteConfig) -> None:
+        origin = request.headers.get("origin")
+        if origin is not None and origin not in site.allowed_origins:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Origin not allowed")
+
+    @app.get("/api/config/{site_code}", response_model=WidgetConfigResponse)
+    def widget_config(site_code: str, request: Request) -> WidgetConfigResponse:
+        site = registered_site(site_code)
+        validate_origin(request, site)
         return WidgetConfigResponse(
-            site_code=api_settings.site_code,
-            chatbot_title=api_settings.chatbot_title,
-            position=api_settings.widget_position,
+            site_code=site.site_code,
+            chatbot_title=site.chatbot_title,
+            position=site.position,
         )
 
     @app.post(
@@ -91,10 +108,10 @@ def create_app(
         response_model=SessionResponse,
         status_code=status.HTTP_201_CREATED,
     )
-    def create_session(payload: SessionCreateRequest) -> SessionResponse:
-        if payload.site_code != api_settings.site_code:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown site")
-        record = session_store.create(payload.site_code)
+    def create_session(payload: SessionCreateRequest, request: Request) -> SessionResponse:
+        site = registered_site(payload.site_code)
+        validate_origin(request, site)
+        record = session_store.create(site.site_code)
         return SessionResponse(
             session_id=record.session_id,
             site_code=record.site_code,
@@ -106,10 +123,13 @@ def create_app(
         record = session_store.get(payload.session_id)
         if record is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown session")
+        site = registered_site(record.site_code)
+        validate_origin(request, site)
         try:
             result = request.app.state.agent.respond(
                 thread_id=str(record.session_id),
                 user_message=payload.message,
+                client_domain=site.domain,
             )
         except ValueError as error:
             raise HTTPException(

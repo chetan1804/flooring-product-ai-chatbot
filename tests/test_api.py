@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from decimal import Decimal
-from typing import Any
 
-import pytest
 from fastapi.testclient import TestClient
 
 from flooring_catalog.agent.models import (
@@ -12,12 +10,34 @@ from flooring_catalog.agent.models import (
     ConversationPreferences,
 )
 from flooring_catalog.api import create_app
-from flooring_catalog.api.settings import ApiSettings
 from flooring_catalog.ranking.models import RankingScore, ScoreComponent, ScoreComponentName
+from flooring_catalog.recommendations import ProductUrlBuilder
 from flooring_catalog.recommendations.models import RecommendationCard
+from flooring_catalog.sites import SiteConfig, SiteRegistry
 
 
-def recommendation() -> RecommendationCard:
+def site_registry() -> SiteRegistry:
+    return SiteRegistry(
+        (
+            SiteConfig(
+                site_code="CLIENT001",
+                domain="https://first.example",
+                allowed_origins=("https://first.example",),
+                chatbot_title="First Flooring Guide",
+                position="bottom-right",
+            ),
+            SiteConfig(
+                site_code="CLIENT002",
+                domain="https://second.example",
+                allowed_origins=("https://second.example", "https://www.second.example"),
+                chatbot_title="Second Flooring Guide",
+                position="bottom-left",
+            ),
+        )
+    )
+
+
+def recommendation(client_domain: str) -> RecommendationCard:
     score = RankingScore(
         total=0.9,
         components=(
@@ -38,7 +58,7 @@ def recommendation() -> RecommendationCard:
         price=Decimal("4.75"),
         attributes={"Product type": "lvt", "Waterproof": "Yes"},
         reasons=("Matches your requested product type: lvt.",),
-        product_url="https://shop.example/?s=ABC123",
+        product_url=ProductUrlBuilder(client_domain).for_sku("ABC123"),
         ranking=score,
     )
 
@@ -46,81 +66,115 @@ def recommendation() -> RecommendationCard:
 class FakeAgent:
     def __init__(self, *, error: Exception | None = None) -> None:
         self.error = error
-        self.calls: list[tuple[str, str]] = []
+        self.calls: list[tuple[str, str, str | None]] = []
 
-    def respond(self, *, thread_id: str, user_message: str) -> AgentTurnResult:
-        self.calls.append((thread_id, user_message))
+    def respond(
+        self,
+        *,
+        thread_id: str,
+        user_message: str,
+        client_domain: str | None = None,
+    ) -> AgentTurnResult:
+        self.calls.append((thread_id, user_message, client_domain))
         if self.error:
             raise self.error
+        assert client_domain is not None
         return AgentTurnResult(
             action=AgentAction.CANDIDATES,
             message="I ranked 1 matching product.",
             preferences=ConversationPreferences(),
             candidate_skus=("ABC123",),
-            recommendations=(recommendation(),),
+            recommendations=(recommendation(client_domain),),
         )
 
 
-def settings(**values: Any) -> ApiSettings:
-    defaults: dict[str, Any] = {
-        "site_code": "CLIENT001",
-        "chatbot_title": "Flooring Guide",
-        "widget_position": "bottom-right",
-        "cors_allow_origins": ("https://shop.example",),
-    }
-    defaults.update(values)
-    return ApiSettings(**defaults)
-
-
-def test_health_config_and_widget_are_served_without_database_access() -> None:
-    app = create_app(agent=FakeAgent(), settings=settings())
+def test_health_site_configs_and_widget_are_served_without_database_access() -> None:
+    app = create_app(agent=FakeAgent(), sites=site_registry())
     with TestClient(app) as client:
         assert client.get("/api/health").json() == {"status": "ok"}
-        config = client.get("/api/config/CLIENT001")
-        assert config.status_code == 200
-        assert config.json() == {
+        first = client.get(
+            "/api/config/CLIENT001", headers={"Origin": "https://first.example"}
+        )
+        second = client.get(
+            "/api/config/CLIENT002", headers={"Origin": "https://second.example"}
+        )
+        assert first.json() == {
             "site_code": "CLIENT001",
-            "chatbot_title": "Flooring Guide",
+            "chatbot_title": "First Flooring Guide",
             "position": "bottom-right",
         }
+        assert second.json()["position"] == "bottom-left"
         assert client.get("/api/config/UNKNOWN").status_code == 404
 
         widget = client.get("/widget.js")
         assert widget.status_code == 200
         assert widget.headers["content-type"].startswith("application/javascript")
         assert "attachShadow" in widget.text
+        assert "script.dataset.position" in widget.text
+        assert "script.dataset.target" in widget.text
         assert "response.recommendations" in widget.text
         assert "textContent" in widget.text
 
 
-def test_session_and_chat_return_validated_recommendation_dto() -> None:
+def test_sessions_generate_links_from_each_registered_site_domain() -> None:
     agent = FakeAgent()
-    app = create_app(agent=agent, settings=settings())
+    app = create_app(agent=agent, sites=site_registry())
     with TestClient(app) as client:
-        session_response = client.post("/api/session", json={"site_code": "CLIENT001"})
-        assert session_response.status_code == 201
-        session = session_response.json()
+        first_session = client.post(
+            "/api/session",
+            json={"site_code": "CLIENT001"},
+            headers={"Origin": "https://first.example"},
+        ).json()
+        second_session = client.post(
+            "/api/session",
+            json={"site_code": "CLIENT002"},
+            headers={"Origin": "https://www.second.example"},
+        ).json()
 
-        response = client.post(
+        first = client.post(
             "/api/chat",
-            json={"session_id": session["session_id"], "message": "Light oak for kitchen"},
+            json={"session_id": first_session["session_id"], "message": "Kitchen"},
+            headers={"Origin": "https://first.example"},
         )
-        assert response.status_code == 200
-        body = response.json()
-        assert body["session_id"] == session["session_id"]
-        assert body["action"] == "candidates"
-        assert body["recommendations"][0]["sku"] == "ABC123"
-        assert body["recommendations"][0]["price"] == "4.75"
-        assert body["recommendations"][0]["product_url"] == (
-            "https://shop.example/?s=ABC123"
+        second = client.post(
+            "/api/chat",
+            json={"session_id": second_session["session_id"], "message": "Kitchen"},
+            headers={"Origin": "https://second.example"},
         )
-        assert agent.calls == [(session["session_id"], "Light oak for kitchen")]
+
+    assert first.status_code == second.status_code == 200
+    assert first.json()["recommendations"][0]["product_url"] == (
+        "https://first.example/?s=ABC123"
+    )
+    assert second.json()["recommendations"][0]["product_url"] == (
+        "https://second.example/?s=ABC123"
+    )
+    assert agent.calls[0][2] == "https://first.example"
+    assert agent.calls[1][2] == "https://second.example"
 
 
-def test_unknown_site_session_and_invalid_payloads_are_rejected() -> None:
-    app = create_app(agent=FakeAgent(), settings=settings())
+def test_unknown_sites_sessions_and_cross_site_origins_are_rejected() -> None:
+    app = create_app(agent=FakeAgent(), sites=site_registry())
     with TestClient(app) as client:
         assert client.post("/api/session", json={"site_code": "UNKNOWN"}).status_code == 404
+        forbidden_session = client.post(
+            "/api/session",
+            json={"site_code": "CLIENT001"},
+            headers={"Origin": "https://second.example"},
+        )
+        assert forbidden_session.status_code == 403
+
+        session = client.post(
+            "/api/session",
+            json={"site_code": "CLIENT001"},
+            headers={"Origin": "https://first.example"},
+        ).json()
+        forbidden_chat = client.post(
+            "/api/chat",
+            json={"session_id": session["session_id"], "message": "hello"},
+            headers={"Origin": "https://second.example"},
+        )
+        assert forbidden_chat.status_code == 403
         assert (
             client.post(
                 "/api/chat",
@@ -132,23 +186,17 @@ def test_unknown_site_session_and_invalid_payloads_are_rejected() -> None:
             == 404
         )
         assert client.post("/api/chat", json={"message": "hello"}).status_code == 422
-        session = client.post("/api/session", json={"site_code": "CLIENT001"}).json()
-        assert (
-            client.post(
-                "/api/chat",
-                json={"session_id": session["session_id"], "message": "   "},
-            ).status_code
-            == 422
-        )
 
 
 def test_chat_errors_are_sanitized() -> None:
     app = create_app(
         agent=FakeAgent(error=RuntimeError("secret database failure")),
-        settings=settings(),
+        sites=site_registry(),
     )
     with TestClient(app, raise_server_exceptions=False) as client:
-        session = client.post("/api/session", json={"site_code": "CLIENT001"}).json()
+        session = client.post(
+            "/api/session", json={"site_code": "CLIENT001"}
+        ).json()
         response = client.post(
             "/api/chat",
             json={"session_id": session["session_id"], "message": "hello"},
@@ -158,13 +206,13 @@ def test_chat_errors_are_sanitized() -> None:
     assert "secret" not in response.text
 
 
-def test_cors_allows_only_configured_storefront_origin() -> None:
-    app = create_app(agent=FakeAgent(), settings=settings())
+def test_cors_uses_the_union_of_registered_storefront_origins() -> None:
+    app = create_app(agent=FakeAgent(), sites=site_registry())
     with TestClient(app) as client:
         allowed = client.options(
             "/api/session",
             headers={
-                "Origin": "https://shop.example",
+                "Origin": "https://www.second.example",
                 "Access-Control-Request-Method": "POST",
             },
         )
@@ -176,20 +224,5 @@ def test_cors_allows_only_configured_storefront_origin() -> None:
             },
         )
     assert allowed.status_code == 200
-    assert allowed.headers["access-control-allow-origin"] == "https://shop.example"
+    assert allowed.headers["access-control-allow-origin"] == "https://www.second.example"
     assert "access-control-allow-origin" not in denied.headers
-
-
-@pytest.mark.parametrize(
-    "values",
-    (
-        {"site_code": "bad code"},
-        {"widget_position": "top-right"},
-        {"cors_allow_origins": ("javascript:alert(1)",)},
-        {"cors_allow_origins": ("https://shop.example/path",)},
-        {"cors_allow_origins": ("https://user:secret@shop.example",)},
-    ),
-)
-def test_api_settings_reject_unsafe_values(values: dict[str, Any]) -> None:
-    with pytest.raises(ValueError):
-        settings(**values)

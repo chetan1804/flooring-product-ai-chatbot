@@ -9,7 +9,7 @@ from psycopg_pool import ConnectionPool
 from flooring_catalog.agent import FlooringConversationAgent, build_flooring_agent_graph
 from flooring_catalog.database import DatabaseSettings
 from flooring_catalog.embeddings import EmbeddingSettings, OpenAIEmbeddingProvider
-from flooring_catalog.recommendations import ClientDomainSettings, RecommendationCardService
+from flooring_catalog.recommendations import RecommendationCardService
 from flooring_catalog.requirements import (
     OpenAIRequirementExtractor,
     RequirementExtractionService,
@@ -55,7 +55,6 @@ def build_runtime_resources() -> RuntimeResources:
     database_settings = DatabaseSettings.from_env()
     extraction_settings = RequirementExtractionSettings.from_env()
     embedding_settings = EmbeddingSettings.from_env()
-    client_settings = ClientDomainSettings.from_env()
 
     pool = ConnectionPool(
         conninfo=database_settings.database_url,
@@ -75,7 +74,7 @@ def build_runtime_resources() -> RuntimeResources:
             extraction_service,
             search_service,
             vocabulary.product_types,
-            recommendation_service=RecommendationCardService(client_settings.client_domain),
+            recommendation_service=RecommendationCardService(),
         )
         return RuntimeResources(agent=FlooringConversationAgent(graph), pool=pool)
     except Exception:

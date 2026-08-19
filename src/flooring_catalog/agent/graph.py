@@ -45,12 +45,15 @@ class RecommendationPresentationService(Protocol):
         self,
         ranked_candidates: list[RankedCandidate],
         preferences: ConversationPreferences,
+        *,
+        client_domain: str | None = None,
     ) -> list[RecommendationCard]:
         """Build catalog-backed cards using a registered client domain."""
 
 
 class FlooringAgentState(TypedDict, total=False):
     user_message: str
+    client_domain: str
     messages: Annotated[list[dict[str, str]], add]
     asked_clarification_fields: Annotated[list[str], add]
     latest_requirements: dict[str, Any]
@@ -136,7 +139,11 @@ def build_flooring_agent_graph(
         ]
         recommendations = [
             card.model_dump(mode="json")
-            for card in recommendation_service.build(ranked, preferences)
+            for card in recommendation_service.build(
+                ranked,
+                preferences,
+                client_domain=state.get("client_domain"),
+            )
         ]
         if candidate_skus:
             action = AgentAction.CANDIDATES
@@ -181,14 +188,23 @@ class FlooringConversationAgent:
     def __init__(self, graph: Any) -> None:
         self._graph = graph
 
-    def respond(self, *, thread_id: str, user_message: str) -> AgentTurnResult:
+    def respond(
+        self,
+        *,
+        thread_id: str,
+        user_message: str,
+        client_domain: str | None = None,
+    ) -> AgentTurnResult:
         normalized_thread_id = thread_id.strip()
         if not normalized_thread_id or len(normalized_thread_id) > 255:
             raise ValueError("thread_id must contain between 1 and 255 characters")
         if not user_message.strip():
             raise ValueError("user_message cannot be empty")
         config = {"configurable": {"thread_id": normalized_thread_id}}
-        state = self._graph.invoke({"user_message": user_message}, config=config)
+        inputs: FlooringAgentState = {"user_message": user_message}
+        if client_domain is not None:
+            inputs["client_domain"] = client_domain
+        state = self._graph.invoke(inputs, config=config)
         clarification = state.get("clarification")
         return AgentTurnResult(
             action=state["action"],

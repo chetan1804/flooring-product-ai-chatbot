@@ -51,20 +51,29 @@ class RecommendationCardService:
         "wear_layer": "Wear layer",
     }
 
-    def __init__(self, client_domain: str) -> None:
-        self._urls = ProductUrlBuilder(client_domain)
+    def __init__(self, client_domain: str | None = None) -> None:
+        self._client_domain = client_domain
+        if client_domain is not None:
+            ProductUrlBuilder(client_domain)
 
     def build(
         self,
         ranked_candidates: list[RankedCandidate],
         preferences: RecommendationPreferences,
+        *,
+        client_domain: str | None = None,
     ) -> list[RecommendationCard]:
-        return [self._card(item, preferences) for item in ranked_candidates]
+        selected_domain = client_domain or self._client_domain
+        if not selected_domain:
+            raise ValueError("a registered client domain is required")
+        urls = ProductUrlBuilder(selected_domain)
+        return [self._card(item, preferences, urls) for item in ranked_candidates]
 
     def _card(
         self,
         ranked: RankedCandidate,
         preferences: RecommendationPreferences,
+        urls: ProductUrlBuilder,
     ) -> RecommendationCard:
         product = ranked.candidate.product
         return RecommendationCard(
@@ -75,7 +84,7 @@ class RecommendationCardService:
             price=product.price,
             attributes=self._attributes(product),
             reasons=self._reasons(product, preferences),
-            product_url=self._urls.for_sku(product.sku),
+            product_url=urls.for_sku(product.sku),
             ranking=ranked.score,
         )
 

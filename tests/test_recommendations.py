@@ -84,8 +84,25 @@ def test_product_url_uses_only_configured_domain_and_encoded_catalog_sku() -> No
     ),
 )
 def test_product_url_rejects_unregistered_domain_shapes(domain: str) -> None:
-    with pytest.raises(ValueError, match="domain"):
+    with pytest.raises(ValueError, match="origin"):
         ProductUrlBuilder(domain)
+
+
+def test_card_service_can_use_a_registered_domain_per_request() -> None:
+    service = RecommendationCardService()
+    preferences = ConversationPreferences(product_types=("lvt",))
+    first = service.build(
+        [ranked_product(sku="SKU-1")],
+        preferences,
+        client_domain="https://first.example",
+    )[0]
+    second = service.build(
+        [ranked_product(sku="SKU-1")],
+        preferences,
+        client_domain="https://second.example",
+    )[0]
+    assert first.product_url == "https://first.example/?s=SKU-1"
+    assert second.product_url == "https://second.example/?s=SKU-1"
 
 
 def test_client_domain_settings_are_loaded_from_server_environment() -> None:

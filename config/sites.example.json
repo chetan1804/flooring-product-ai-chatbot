@@ -1,0 +1,23 @@
+{
+  "sites": [
+    {
+      "site_code": "CLIENT001",
+      "domain": "https://exampleflooring.com",
+      "allowed_origins": [
+        "https://exampleflooring.com"
+      ],
+      "position": "bottom-right",
+      "chatbot_title": "Flooring Assistant"
+    },
+    {
+      "site_code": "CLIENT002",
+      "domain": "https://secondflooringstore.com",
+      "allowed_origins": [
+        "https://secondflooringstore.com",
+        "https://www.secondflooringstore.com"
+      ],
+      "position": "bottom-left",
+      "chatbot_title": "Flooring Product Guide"
+    }
+  ]
+}

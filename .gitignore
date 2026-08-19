@@ -12,3 +12,6 @@ __pycache__/
 # Product catalogs are external inputs and must never be committed.
 data/
 products.json
+
+# Deployment-specific registered sites; commit only the sanitized example.
+config/sites.json

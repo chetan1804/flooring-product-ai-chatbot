@@ -1,10 +1,10 @@
 # AI-Powered Flooring Product Recommendation Chatbot
 
-This repository currently implements Steps 1 through 8: bounded-memory catalog profiling,
+This repository currently implements Steps 1 through 9: bounded-memory catalog profiling,
 PostgreSQL ingestion, embeddings, hybrid retrieval, and Pydantic-validated AI customer
 requirement extraction, plus a LangGraph conversational agent and deterministic flooring
 business-rule ranking with clickable catalog-backed recommendation cards, a FastAPI
-backend, and a framework-independent JavaScript widget.
+backend, a framework-independent JavaScript widget, and registered multi-site installation.
 
 ## Setup
 
@@ -191,8 +191,8 @@ flooring-chat --thread-id ranking-demo
 
 ## Recommendation cards and product links
 
-Set the registered storefront origin in server-side configuration. It must be an HTTP(S)
-origin without a path, query, fragment, or embedded credentials:
+For the local `flooring-chat` CLI, set the storefront origin in server-side configuration.
+It must be an HTTP(S) origin without a path, query, fragment, or embedded credentials:
 
 ```bash
 CLIENT_DOMAIN=https://exampleflooring.com
@@ -208,21 +208,22 @@ https://exampleflooring.com/?s=ABC123
 Each recommendation DTO includes the catalog name, SKU, swatch, gallery image when
 available, positive price when available, an allow-listed set of important catalog
 attributes, deterministic factual reasons, product URL, and its explainable ranking
-score. Missing product values remain absent instead of being invented. The current
-single registered domain is a server setting; Step 9 will introduce multi-site lookup by
-`site_code`.
+score. Missing product values remain absent instead of being invented. The hosted API
+instead resolves domains from its registered multi-site configuration.
 
 ## FastAPI backend and embeddable widget
 
 The hosted API uses Pydantic request/response contracts and initializes its database pool,
 catalog vocabulary, AI clients, and shared LangGraph agent during application lifespan.
-Configure the initial single storefront in `.env`:
+Create the deployment-specific site registry from the sanitized example, then point `.env`
+to it:
+
+```bash
+cp config/sites.example.json config/sites.json
+```
 
 ```dotenv
-SITE_CODE=CLIENT001
-CHATBOT_TITLE=Flooring Assistant
-WIDGET_POSITION=bottom-right
-CORS_ALLOW_ORIGINS=https://exampleflooring.com
+SITE_CONFIG_PATH=config/sites.json
 ```
 
 Start the development server:
@@ -270,5 +271,61 @@ Or render it inside an existing element:
 The widget has no React or client-library dependency. It uses Shadow DOM isolation where
 available, creates content with DOM text nodes instead of injecting API HTML, shows
 loading/API errors, and renders catalog recommendation cards with safe external links.
-Step 9 replaces the initial single-site settings with registered multi-site configuration
-and stricter origin-to-site validation.
+
+## Multi-site configuration and one-line installation
+
+Each entry in `config/sites.json` registers one client and controls its product-link domain,
+allowed browser origins, default floating position, and chatbot title:
+
+```json
+{
+  "sites": [
+    {
+      "site_code": "CLIENT001",
+      "domain": "https://exampleflooring.com",
+      "allowed_origins": ["https://exampleflooring.com"],
+      "position": "bottom-right",
+      "chatbot_title": "Flooring Assistant"
+    }
+  ]
+}
+```
+
+Domains and origins must be HTTP(S) origins without paths, credentials, queries, or
+fragments. The product domain must also appear in `allowed_origins`. Duplicate site codes
+and unknown sites are rejected. Browser sessions are bound to their registered site, and
+config, session, and chat requests with a different `Origin` are rejected.
+
+Install the registered floating chatbot with one script include:
+
+```html
+<script
+  src="https://chatbot.example.com/widget.js"
+  data-site="CLIENT001">
+</script>
+```
+
+The registry supplies the default position. A page may override floating placement:
+
+```html
+<script
+  src="https://chatbot.example.com/widget.js"
+  data-site="CLIENT001"
+  data-position="bottom-left">
+</script>
+```
+
+Or render inside a specific element:
+
+```html
+<div id="flooring-chatbot"></div>
+<script
+  src="https://chatbot.example.com/widget.js"
+  data-site="CLIENT001"
+  data-target="#flooring-chatbot">
+</script>
+```
+
+The browser sends only `site_code` and the server-generated session ID. Product links are
+always generated from the domain in the server registry and the catalog SKU; a browser
+cannot supply or override the destination domain.
