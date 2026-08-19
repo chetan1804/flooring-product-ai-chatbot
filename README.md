@@ -1,9 +1,9 @@
 # AI-Powered Flooring Product Recommendation Chatbot
 
-This repository currently implements Steps 1 through 3: bounded-memory catalog profiling,
-eligibility validation, PostgreSQL ingestion, batched product embeddings, parameterized
-structured filtering, pgvector semantic retrieval, and hybrid candidate fusion. LLM
-requirement extraction, business ranking, API, and widget functionality are deferred.
+This repository currently implements Steps 1 through 4: bounded-memory catalog profiling,
+PostgreSQL ingestion, embeddings, hybrid retrieval, and Pydantic-validated AI customer
+requirement extraction. Conversation state, business ranking, API, and widget
+functionality are deferred.
 
 ## Setup
 
@@ -100,3 +100,25 @@ flooring-search \
 
 The retrieval score only fuses structured and semantic candidate signals. Flooring room
 rules and final recommendation ranking intentionally belong to Step 6.
+
+## Customer requirement extraction
+
+The extractor uses the OpenAI Responses structured-output parser with a strict Pydantic
+model. Customer text is isolated as an untrusted user message. Model output is validated
+again in application code and mapped only to vocabulary values loaded from the current
+database. Unknown or ambiguous values remain contextual terms and never become arbitrary
+SQL fields or values.
+
+```bash
+export DATABASE_URL='postgresql://flooring_app:password@localhost:5432/flooring'
+export OPENAI_API_KEY='server-side-secret'
+export REQUIREMENT_EXTRACTION_MODEL='gpt-5-mini'
+
+flooring-extract \
+  'I need warm light-oak luxury vinyl for a busy kitchen under $6 per square foot.'
+```
+
+The command returns both the source extraction and the normalized result. For example,
+`luxury vinyl` maps to `lvt` only when `lvt` exists in the database vocabulary. Rooms,
+pets, kids, traffic, installation, durability, and subjective appearance preferences are
+retained for the later conversational and business-rule steps.
