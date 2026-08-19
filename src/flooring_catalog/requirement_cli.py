@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 
+from flooring_catalog.config import load_local_environment
 from flooring_catalog.database import DatabaseSettings, database_connection
 from flooring_catalog.requirements import (
     OpenAIRequirementExtractor,
@@ -16,6 +17,7 @@ from flooring_catalog.requirements.vocabulary import CatalogVocabularyRepository
 
 
 def main() -> int:
+    load_local_environment()
     parser = argparse.ArgumentParser(description="Extract flooring customer requirements")
     parser.add_argument("message", help="One customer message to analyze")
     args = parser.parse_args()
@@ -32,4 +34,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

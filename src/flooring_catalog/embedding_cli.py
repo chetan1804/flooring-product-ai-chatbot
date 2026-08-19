@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import asdict
 
+from flooring_catalog.config import load_local_environment
 from flooring_catalog.database import DatabaseSettings, database_connection
 from flooring_catalog.embeddings import (
     EmbeddingSettings,
@@ -14,6 +15,7 @@ from flooring_catalog.embeddings import (
 
 
 def main() -> int:
+    load_local_environment()
     database_settings = DatabaseSettings.from_env()
     embedding_settings = EmbeddingSettings.from_env()
     provider = OpenAIEmbeddingProvider(embedding_settings)
@@ -30,4 +32,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

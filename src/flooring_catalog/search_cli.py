@@ -7,6 +7,7 @@ import json
 from dataclasses import asdict
 from decimal import Decimal
 
+from flooring_catalog.config import load_local_environment
 from flooring_catalog.database import DatabaseSettings, database_connection
 from flooring_catalog.embeddings import EmbeddingSettings, OpenAIEmbeddingProvider
 from flooring_catalog.search import (
@@ -18,6 +19,7 @@ from flooring_catalog.search import (
 
 
 def main() -> int:
+    load_local_environment()
     parser = argparse.ArgumentParser(description="Run hybrid flooring product retrieval")
     parser.add_argument("--query")
     parser.add_argument("--type", action="append", default=[])

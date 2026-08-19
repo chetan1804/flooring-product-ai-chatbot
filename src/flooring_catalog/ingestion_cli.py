@@ -8,11 +8,13 @@ from collections.abc import Sequence
 from dataclasses import asdict
 from pathlib import Path
 
+from flooring_catalog.config import load_local_environment
 from flooring_catalog.database import DatabaseSettings, apply_schema, database_connection
 from flooring_catalog.ingestion import ingest_catalog
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    load_local_environment()
     parser = argparse.ArgumentParser(description="Ingest eligible flooring products")
     parser.add_argument("catalog", type=Path)
     parser.add_argument("--apply-schema", action="store_true")
@@ -31,4 +33,3 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

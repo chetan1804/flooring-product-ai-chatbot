@@ -1,9 +1,9 @@
 # AI-Powered Flooring Product Recommendation Chatbot
 
-This repository currently implements Steps 1 through 4: bounded-memory catalog profiling,
+This repository currently implements Steps 1 through 5: bounded-memory catalog profiling,
 PostgreSQL ingestion, embeddings, hybrid retrieval, and Pydantic-validated AI customer
-requirement extraction. Conversation state, business ranking, API, and widget
-functionality are deferred.
+requirement extraction, plus a LangGraph conversational agent. Business ranking, API,
+and widget functionality are deferred.
 
 ## Setup
 
@@ -122,3 +122,36 @@ The command returns both the source extraction and the normalized result. For ex
 `luxury vinyl` maps to `lvt` only when `lvt` exists in the database vocabulary. Rooms,
 pets, kids, traffic, installation, durability, and subjective appearance preferences are
 retained for the later conversational and business-rule steps.
+
+## Conversational recommendation agent
+
+The LangGraph agent remembers validated flooring preferences by conversation thread,
+detects missing information, asks at most one focused clarification per turn, and then
+orchestrates the existing hybrid product search. It asks about product type, room/use,
+and appearance in priority order, without repeating a question the customer has already
+declined to answer.
+
+All project commands automatically read `.env` when it exists, while existing shell
+environment variables retain precedence. After setting up the database, ingesting the
+catalog, and generating embeddings, launch an interactive conversation with:
+
+```bash
+flooring-chat --thread-id demo-customer
+```
+
+Example interaction:
+
+```text
+You: I need flooring for my kitchen.
+Assistant: What type of flooring would you prefer? Available options include ...
+You: Luxury vinyl.
+Assistant: Do you have a preferred color, shade, style, material, or overall look?
+You: Light natural oak.
+Assistant: I found 5 catalog candidates matching the preferences collected so far.
+Candidate SKUs: ...
+```
+
+The command uses LangGraph's in-memory checkpointer, so thread history survives turns
+within that running process and resets when it exits. The graph accepts an injected
+checkpointer for a durable production deployment. Candidate retrieval in this step is
+not final recommendation ranking; room suitability and business rules remain Step 6.
