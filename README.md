@@ -1,10 +1,10 @@
 # AI-Powered Flooring Product Recommendation Chatbot
 
-This repository currently implements Steps 1 through 7: bounded-memory catalog profiling,
+This repository currently implements Steps 1 through 8: bounded-memory catalog profiling,
 PostgreSQL ingestion, embeddings, hybrid retrieval, and Pydantic-validated AI customer
 requirement extraction, plus a LangGraph conversational agent and deterministic flooring
-business-rule ranking with clickable catalog-backed recommendation cards. API and widget
-functionality are deferred.
+business-rule ranking with clickable catalog-backed recommendation cards, a FastAPI
+backend, and a framework-independent JavaScript widget.
 
 ## Setup
 
@@ -211,3 +211,64 @@ attributes, deterministic factual reasons, product URL, and its explainable rank
 score. Missing product values remain absent instead of being invented. The current
 single registered domain is a server setting; Step 9 will introduce multi-site lookup by
 `site_code`.
+
+## FastAPI backend and embeddable widget
+
+The hosted API uses Pydantic request/response contracts and initializes its database pool,
+catalog vocabulary, AI clients, and shared LangGraph agent during application lifespan.
+Configure the initial single storefront in `.env`:
+
+```dotenv
+SITE_CODE=CLIENT001
+CHATBOT_TITLE=Flooring Assistant
+WIDGET_POSITION=bottom-right
+CORS_ALLOW_ORIGINS=https://exampleflooring.com
+```
+
+Start the development server:
+
+```bash
+source .venv/bin/activate
+flooring-api --host 127.0.0.1 --port 8000 --reload
+```
+
+Available routes:
+
+| Method | Route | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/health` | Service health |
+| `GET` | `/api/config/{site_code}` | Widget display configuration |
+| `POST` | `/api/session` | Server-generated conversation session |
+| `POST` | `/api/chat` | Validated conversational recommendations |
+| `GET` | `/widget.js` | Cacheable standalone widget asset |
+
+The initial session registry and LangGraph checkpointer are in memory, so sessions reset
+when the process restarts. Durable distributed session persistence is production work for
+a later step.
+
+Embed the floating widget from the API origin:
+
+```html
+<script
+  src="https://chatbot.example.com/widget.js"
+  data-site="CLIENT001"
+  data-position="bottom-right">
+</script>
+```
+
+Or render it inside an existing element:
+
+```html
+<div id="flooring-chatbot"></div>
+<script
+  src="https://chatbot.example.com/widget.js"
+  data-site="CLIENT001"
+  data-target="#flooring-chatbot">
+</script>
+```
+
+The widget has no React or client-library dependency. It uses Shadow DOM isolation where
+available, creates content with DOM text nodes instead of injecting API HTML, shows
+loading/API errors, and renders catalog recommendation cards with safe external links.
+Step 9 replaces the initial single-site settings with registered multi-site configuration
+and stricter origin-to-site validation.

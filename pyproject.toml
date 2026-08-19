@@ -9,15 +9,18 @@ description = "Catalog tooling for an AI-powered flooring recommendation chatbot
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+  "fastapi>=0.116,<1",
   "langgraph>=1.1.5,<2",
   "openai>=1.100,<3",
   "pydantic>=2.11,<3",
   "psycopg[binary]>=3.2,<4",
+  "psycopg-pool>=3.2,<4",
   "python-dotenv>=1.1,<2",
+  "uvicorn[standard]>=0.35,<1",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8,<10", "ruff>=0.6,<1"]
+dev = ["httpx2>=2,<3", "pytest>=8,<10", "ruff>=0.6,<1"]
 
 [project.scripts]
 flooring-profile = "flooring_catalog.cli:main"
@@ -26,9 +29,13 @@ flooring-embed = "flooring_catalog.embedding_cli:main"
 flooring-search = "flooring_catalog.search_cli:main"
 flooring-extract = "flooring_catalog.requirement_cli:main"
 flooring-chat = "flooring_catalog.chat_cli:main"
+flooring-api = "flooring_catalog.api.main:run"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/flooring_catalog"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/flooring_catalog/static/widget.js" = "flooring_catalog/static/widget.js"
 
 [tool.pytest.ini_options]
 addopts = "-q"
