@@ -145,6 +145,8 @@ def test_graph_remembers_preferences_and_does_not_repeat_questions() -> None:
     assert third.preferences.product_types == ("lvt",)
     assert third.preferences.colors == ("Light Oak",)
     assert third.candidate_skus == ("SKU-1", "SKU-2")
+    assert [candidate.sku for candidate in third.ranked_candidates] == ["SKU-1", "SKU-2"]
+    assert all(candidate.score.components for candidate in third.ranked_candidates)
     assert len(search.calls) == 1
     query, filters = search.calls[0]
     assert query == "flooring type: lvt; room: kitchen; color: Light Oak"

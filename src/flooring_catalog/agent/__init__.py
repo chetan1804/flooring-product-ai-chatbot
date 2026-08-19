@@ -3,6 +3,7 @@
 from flooring_catalog.agent.graph import FlooringConversationAgent, build_flooring_agent_graph
 from flooring_catalog.agent.models import (
     AgentAction,
+    AgentRankedCandidate,
     AgentTurnResult,
     ChatMessage,
     ConversationPreferences,
@@ -10,10 +11,10 @@ from flooring_catalog.agent.models import (
 
 __all__ = [
     "AgentAction",
+    "AgentRankedCandidate",
     "AgentTurnResult",
     "ChatMessage",
     "ConversationPreferences",
     "FlooringConversationAgent",
     "build_flooring_agent_graph",
 ]
-

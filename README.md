@@ -1,9 +1,9 @@
 # AI-Powered Flooring Product Recommendation Chatbot
 
-This repository currently implements Steps 1 through 5: bounded-memory catalog profiling,
+This repository currently implements Steps 1 through 6: bounded-memory catalog profiling,
 PostgreSQL ingestion, embeddings, hybrid retrieval, and Pydantic-validated AI customer
-requirement extraction, plus a LangGraph conversational agent. Business ranking, API,
-and widget functionality are deferred.
+requirement extraction, plus a LangGraph conversational agent and deterministic flooring
+business-rule ranking. Recommendation cards, API, and widget functionality are deferred.
 
 ## Setup
 
@@ -98,8 +98,8 @@ flooring-search \
   --limit 10
 ```
 
-The retrieval score only fuses structured and semantic candidate signals. Flooring room
-rules and final recommendation ranking intentionally belong to Step 6.
+The retrieval score only fuses structured and semantic candidate signals. The separate
+Step 6 ranking layer applies flooring room and household rules to those candidates.
 
 ## Customer requirement extraction
 
@@ -154,4 +154,35 @@ Candidate SKUs: ...
 The command uses LangGraph's in-memory checkpointer, so thread history survives turns
 within that running process and resets when it exits. The graph accepts an injected
 checkpointer for a durable production deployment. Candidate retrieval in this step is
-not final recommendation ranking; room suitability and business rules remain Step 6.
+followed by deterministic Step 6 ranking. Product cards and customer-facing explanations
+remain Step 7.
+
+## Flooring business rules and ranking
+
+Business rules live outside LLM prompts and score only retrieved catalog products. The
+default ranker selects five products using these normalized weights:
+
+| Component | Default weight |
+| --- | ---: |
+| Hybrid retrieval relevance | 40% |
+| Room suitability | 20% |
+| Lifestyle and durability | 15% |
+| Budget fit | 15% |
+| Catalog availability | 10% |
+
+`RankingConfig` and `RankingWeights` can be injected when constructing the agent, allowing
+weights and result count to change without editing rule code. Each ranked candidate
+includes the raw score, normalized weight, weighted contribution, and reasons for every
+component.
+
+The initial domain layer handles moisture-sensitive rooms, kitchen durability, bedroom
+comfort, pets, kids, traffic, and residential/commercial use. It uses confirmed product
+columns and catalog metadata such as `application`, `features`, `in_stock`, and
+`wear_layer`. A missing price receives a neutral budget score and is never interpreted as
+zero.
+
+Run the interactive agent to see ordered SKUs and final scores:
+
+```bash
+flooring-chat --thread-id ranking-demo
+```

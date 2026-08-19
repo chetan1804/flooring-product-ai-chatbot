@@ -7,6 +7,7 @@ from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from flooring_catalog.ranking.models import RankingScore
 from flooring_catalog.requirements.models import (
     NormalizedRequirements,
     TrafficLevel,
@@ -172,6 +173,15 @@ class ClarificationRequest(BaseModel):
     question: str
 
 
+class AgentRankedCandidate(BaseModel):
+    """Step 6 ranking output without the Step 7 presentation-card fields."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    sku: str
+    score: RankingScore
+
+
 class AgentTurnResult(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -180,4 +190,4 @@ class AgentTurnResult(BaseModel):
     clarification_field: str | None = None
     preferences: ConversationPreferences
     candidate_skus: tuple[str, ...] = ()
-
+    ranked_candidates: tuple[AgentRankedCandidate, ...] = ()

@@ -57,11 +57,10 @@ def main() -> int:
                 continue
             result = agent.respond(thread_id=args.thread_id, user_message=message)
             print(f"Assistant: {result.message}")
-            if result.candidate_skus:
-                print(f"Candidate SKUs: {', '.join(result.candidate_skus)}")
+            for position, candidate in enumerate(result.ranked_candidates, start=1):
+                print(f"  {position}. {candidate.sku} (score: {candidate.score.total:.3f})")
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

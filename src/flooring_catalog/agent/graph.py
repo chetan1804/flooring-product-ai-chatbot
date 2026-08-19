@@ -12,12 +12,14 @@ from langgraph.graph import END, START, StateGraph
 from flooring_catalog.agent.clarification import MissingInformationDetector
 from flooring_catalog.agent.models import (
     AgentAction,
+    AgentRankedCandidate,
     AgentTurnResult,
     ChatMessage,
     ChatRole,
     ClarificationRequest,
     ConversationPreferences,
 )
+from flooring_catalog.ranking import FlooringRecommendationRanker, RankedCandidate
 from flooring_catalog.requirements.models import NormalizedRequirements
 from flooring_catalog.requirements.service import RequirementExtractionService
 from flooring_catalog.search.models import HybridCandidate, SearchFilters
@@ -26,6 +28,15 @@ from flooring_catalog.search.models import HybridCandidate, SearchFilters
 class CandidateSearchService(Protocol):
     def search(self, *, query: str | None, filters: SearchFilters) -> list[HybridCandidate]:
         """Return hybrid candidates for validated preferences."""
+
+
+class CandidateRankingService(Protocol):
+    def rank(
+        self,
+        candidates: list[HybridCandidate],
+        preferences: ConversationPreferences,
+    ) -> list[RankedCandidate]:
+        """Return the best candidates in deterministic ranking order."""
 
 
 class FlooringAgentState(TypedDict, total=False):
@@ -38,6 +49,7 @@ class FlooringAgentState(TypedDict, total=False):
     action: str
     assistant_message: str
     candidate_skus: list[str]
+    ranked_candidates: list[dict[str, Any]]
     search_query: str
 
 
@@ -46,11 +58,13 @@ def build_flooring_agent_graph(
     search_service: CandidateSearchService,
     catalog_product_types: tuple[str, ...],
     *,
+    ranking_service: CandidateRankingService | None = None,
     checkpointer: Any | None = None,
 ) -> Any:
     """Compile the dependency-injected conversational graph."""
 
     detector = MissingInformationDetector(catalog_product_types)
+    ranker = ranking_service or FlooringRecommendationRanker()
 
     def extract_requirements(state: FlooringAgentState) -> dict[str, Any]:
         message = state["user_message"].strip()
@@ -59,6 +73,7 @@ def build_flooring_agent_graph(
             "messages": [ChatMessage(role=ChatRole.USER, content=message).model_dump(mode="json")],
             "latest_requirements": result.normalized.model_dump(mode="json"),
             "candidate_skus": [],
+            "ranked_candidates": [],
         }
 
     def merge_preferences(state: FlooringAgentState) -> dict[str, Any]:
@@ -97,10 +112,18 @@ def build_flooring_agent_graph(
             query=query or None,
             filters=preferences.to_search_filters(),
         )
-        candidate_skus = [candidate.product.sku for candidate in candidates]
+        ranked = ranker.rank(candidates, preferences)
+        candidate_skus = [item.candidate.product.sku for item in ranked]
+        ranked_candidates = [
+            AgentRankedCandidate(
+                sku=item.candidate.product.sku,
+                score=item.score,
+            ).model_dump(mode="json")
+            for item in ranked
+        ]
         if candidate_skus:
             action = AgentAction.CANDIDATES
-            message = f"I found {len(candidate_skus)} matching product candidates."
+            message = f"I ranked {len(candidate_skus)} matching products."
         else:
             action = AgentAction.NO_RESULTS
             message = "I couldn't find matching products for those preferences."
@@ -111,6 +134,7 @@ def build_flooring_agent_graph(
                 ChatMessage(role=ChatRole.ASSISTANT, content=message).model_dump(mode="json")
             ],
             "candidate_skus": candidate_skus,
+            "ranked_candidates": ranked_candidates,
             "search_query": query,
         }
 
@@ -154,6 +178,10 @@ class FlooringConversationAgent:
             clarification_field=clarification["field"] if clarification else None,
             preferences=ConversationPreferences.model_validate(state["preferences"]),
             candidate_skus=tuple(state.get("candidate_skus", [])),
+            ranked_candidates=tuple(
+                AgentRankedCandidate.model_validate(item)
+                for item in state.get("ranked_candidates", [])
+            ),
         )
 
     def history(self, *, thread_id: str) -> Sequence[ChatMessage]:
