@@ -1,0 +1,50 @@
+{
+  "widgets": [
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 0,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "region": "us-east-1",
+        "title": "ALB requests and target errors",
+        "view": "timeSeries",
+        "metrics": [
+          ["AWS/ApplicationELB", "RequestCount", "LoadBalancer", "app/REPLACE_ME"],
+          [".", "HTTPCode_Target_5XX_Count", ".", "."],
+          [".", "TargetResponseTime", ".", ".", {"stat": "p95"}]
+        ]
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12,
+      "y": 0,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "region": "us-east-1",
+        "title": "ECS CPU and memory",
+        "view": "timeSeries",
+        "metrics": [
+          ["AWS/ECS", "CPUUtilization", "ClusterName", "REPLACE_ME", "ServiceName", "REPLACE_ME"],
+          [".", "MemoryUtilization", ".", ".", ".", "."]
+        ]
+      }
+    },
+    {
+      "type": "log",
+      "x": 0,
+      "y": 6,
+      "width": 24,
+      "height": 6,
+      "properties": {
+        "region": "us-east-1",
+        "title": "Slow or failed API requests",
+        "view": "table",
+        "query": "SOURCE '/ecs/flooring-chatbot-api' | fields @timestamp, request_id, method, path, status_code, duration_ms | filter status_code >= 500 or duration_ms >= 5000 | sort @timestamp desc | limit 100"
+      }
+    }
+  ]
+}

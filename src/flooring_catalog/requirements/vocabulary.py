@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from psycopg import Connection
+from psycopg.rows import tuple_row
 
 from flooring_catalog.requirements.models import CatalogVocabulary
 
@@ -23,7 +24,10 @@ class CatalogVocabularyRepository:
 
     def load(self) -> CatalogVocabulary:
         values: dict[str, tuple[str, ...]] = {}
-        with self._connection.cursor() as cursor:
+        # The API's shared pool uses dict rows for LangGraph's PostgreSQL
+        # checkpointer. This query intentionally requests tuples because it reads
+        # a single dynamically selected column by position.
+        with self._connection.cursor(row_factory=tuple_row) as cursor:
             for vocabulary_field, column in VOCABULARY_COLUMNS.items():
                 # Column identifiers are developer-owned constants, never request input.
                 cursor.execute(
@@ -36,4 +40,3 @@ ORDER BY btrim({column})
                 )
                 values[vocabulary_field] = tuple(row[0] for row in cursor.fetchall())
         return CatalogVocabulary.model_validate(values)
-

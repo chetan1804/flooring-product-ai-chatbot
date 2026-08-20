@@ -11,6 +11,7 @@ requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.116,<1",
   "langgraph>=1.1.5,<2",
+  "langgraph-checkpoint-postgres>=3,<4",
   "openai>=1.100,<3",
   "pydantic>=2.11,<3",
   "psycopg[binary]>=3.2,<4",
@@ -30,6 +31,7 @@ flooring-search = "flooring_catalog.search_cli:main"
 flooring-extract = "flooring_catalog.requirement_cli:main"
 flooring-chat = "flooring_catalog.chat_cli:main"
 flooring-api = "flooring_catalog.api.main:run"
+flooring-migrate = "flooring_catalog.migration_cli:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/flooring_catalog"]

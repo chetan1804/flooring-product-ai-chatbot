@@ -100,11 +100,15 @@ def test_registry_loads_validated_json_from_environment(tmp_path: Path) -> None:
     assert SiteRegistrySettings.from_env(
         {"SITE_CONFIG_PATH": str(path)}
     ).config_path == path
+    inline = SiteRegistry.from_env({"SITE_CONFIG_JSON": path.read_text(encoding="utf-8")})
+    assert inline.get("CLIENT001") == site()
 
 
 def test_registry_reports_missing_and_invalid_files(tmp_path: Path) -> None:
-    with pytest.raises(ValueError, match="SITE_CONFIG_PATH"):
+    with pytest.raises(ValueError, match="exactly one"):
         SiteRegistry.from_env({})
+    with pytest.raises(ValueError, match="exactly one"):
+        SiteRegistry.from_env({"SITE_CONFIG_PATH": "x", "SITE_CONFIG_JSON": "{}"})
     with pytest.raises(ValueError, match="not found"):
         SiteRegistry.from_file(tmp_path / "missing.json")
     invalid = tmp_path / "invalid.json"

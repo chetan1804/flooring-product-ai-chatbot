@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
+from psycopg.rows import tuple_row
 from pydantic import ValidationError
 
 from flooring_catalog.requirements.mapper import CatalogRequirementMapper
@@ -209,7 +210,11 @@ class FakeVocabularyCursor:
 
 
 class FakeVocabularyConnection:
-    def cursor(self) -> FakeVocabularyCursor:
+    def __init__(self) -> None:
+        self.requested_row_factory: object | None = None
+
+    def cursor(self, *, row_factory: object | None = None) -> FakeVocabularyCursor:
+        self.requested_row_factory = row_factory
         return FakeVocabularyCursor(
             {
                 "z_prod_type": ["lvt", "tile"],
@@ -222,10 +227,9 @@ class FakeVocabularyConnection:
 
 
 def test_vocabulary_is_loaded_from_database_values() -> None:
-    vocabulary = CatalogVocabularyRepository(
-        FakeVocabularyConnection()  # type: ignore[arg-type]
-    ).load()
+    connection = FakeVocabularyConnection()
+    vocabulary = CatalogVocabularyRepository(connection).load()  # type: ignore[arg-type]
     assert vocabulary.product_types == ("lvt", "tile")
     assert vocabulary.brands == ("Shaw Floors",)
     assert vocabulary.colors == ("Light Oak",)
-
+    assert connection.requested_row_factory is tuple_row

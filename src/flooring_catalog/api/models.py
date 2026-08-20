@@ -45,7 +45,7 @@ class ChatResponse(BaseModel):
 class HealthResponse(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    status: Literal["ok"] = "ok"
+    status: Literal["ok", "unavailable"] = "ok"
 
 
 class WidgetConfigResponse(BaseModel):

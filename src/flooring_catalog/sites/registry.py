@@ -16,15 +16,20 @@ from flooring_catalog.sites.models import SiteConfig, SiteRegistryDocument
 
 @dataclass(frozen=True, slots=True)
 class SiteRegistrySettings:
-    config_path: Path
+    config_path: Path | None = None
+    config_json: str | None = None
 
     @classmethod
     def from_env(cls, environ: Mapping[str, str] | None = None) -> SiteRegistrySettings:
         values = os.environ if environ is None else environ
         raw_path = values.get("SITE_CONFIG_PATH", "").strip()
-        if not raw_path:
-            raise ValueError("SITE_CONFIG_PATH is required")
-        return cls(config_path=Path(raw_path).expanduser())
+        config_json = values.get("SITE_CONFIG_JSON", "").strip()
+        if bool(raw_path) == bool(config_json):
+            raise ValueError("set exactly one of SITE_CONFIG_PATH or SITE_CONFIG_JSON")
+        return cls(
+            config_path=Path(raw_path).expanduser() if raw_path else None,
+            config_json=config_json or None,
+        )
 
 
 class SiteRegistry:
@@ -50,6 +55,18 @@ class SiteRegistry:
             raise ValueError(f"site configuration file not found: {config_path}") from error
         except json.JSONDecodeError as error:
             raise ValueError(f"site configuration is not valid JSON: {config_path}") from error
+        return cls._from_raw(raw)
+
+    @classmethod
+    def from_json(cls, value: str) -> SiteRegistry:
+        try:
+            raw = json.loads(value)
+        except json.JSONDecodeError as error:
+            raise ValueError("SITE_CONFIG_JSON is not valid JSON") from error
+        return cls._from_raw(raw)
+
+    @classmethod
+    def _from_raw(cls, raw: object) -> SiteRegistry:
         try:
             document = SiteRegistryDocument.model_validate(raw)
         except ValidationError as error:
@@ -59,6 +76,10 @@ class SiteRegistry:
     @classmethod
     def from_env(cls, environ: Mapping[str, str] | None = None) -> SiteRegistry:
         settings = SiteRegistrySettings.from_env(environ)
+        if settings.config_json is not None:
+            return cls.from_json(settings.config_json)
+        if settings.config_path is None:  # Defensive: settings validation prevents this.
+            raise ValueError("site configuration is missing")
         return cls.from_file(settings.config_path)
 
     def get(self, site_code: str) -> SiteConfig | None:

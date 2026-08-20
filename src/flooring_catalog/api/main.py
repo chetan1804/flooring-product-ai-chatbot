@@ -9,13 +9,16 @@ from fastapi import FastAPI
 
 from flooring_catalog.api.app import create_app
 from flooring_catalog.config import load_local_environment
+from flooring_catalog.production import ProductionSettings, configure_logging
 
 
 def application() -> FastAPI:
     """Uvicorn factory that loads deployment configuration at server startup."""
 
     load_local_environment()
-    return create_app()
+    settings = ProductionSettings.from_env()
+    configure_logging(settings.log_level)
+    return create_app(production=settings)
 
 
 def run() -> None:

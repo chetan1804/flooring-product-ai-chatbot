@@ -1,0 +1,72 @@
+{
+  "family": "flooring-chatbot-api",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "executionRoleArn": "arn:aws:iam::123456789012:role/flooring-chatbot-ecs-execution",
+  "taskRoleArn": "arn:aws:iam::123456789012:role/flooring-chatbot-task",
+  "containerDefinitions": [
+    {
+      "name": "api",
+      "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/flooring-chatbot:IMAGE_TAG",
+      "essential": true,
+      "readonlyRootFilesystem": true,
+      "portMappings": [
+        {
+          "containerPort": 8000,
+          "protocol": "tcp",
+          "appProtocol": "http"
+        }
+      ],
+      "environment": [
+        {"name": "APP_ENV", "value": "production"},
+        {"name": "LOG_LEVEL", "value": "INFO"},
+        {"name": "ALLOWED_HOSTS", "value": "chatbot.example.com"},
+        {"name": "API_DOCS_ENABLED", "value": "false"},
+        {"name": "LANGGRAPH_STRICT_MSGPACK", "value": "true"},
+        {"name": "DATABASE_POOL_MIN_SIZE", "value": "1"},
+        {"name": "DATABASE_POOL_MAX_SIZE", "value": "10"},
+        {"name": "DATABASE_POOL_TIMEOUT_SECONDS", "value": "30"},
+        {"name": "SESSION_TTL_SECONDS", "value": "86400"},
+        {"name": "OPENAI_TIMEOUT_SECONDS", "value": "30"},
+        {"name": "OPENAI_MAX_RETRIES", "value": "2"}
+      ],
+      "secrets": [
+        {
+          "name": "DATABASE_URL",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:123456789012:secret:flooring/database-url"
+        },
+        {
+          "name": "OPENAI_API_KEY",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:123456789012:secret:flooring/openai-api-key"
+        },
+        {
+          "name": "SITE_CONFIG_JSON",
+          "valueFrom": "arn:aws:secretsmanager:us-east-1:123456789012:secret:flooring/site-config"
+        }
+      ],
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3)\" || exit 1"
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 30
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/flooring-chatbot-api",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "api"
+        }
+      },
+      "linuxParameters": {
+        "initProcessEnabled": true
+      }
+    }
+  ]
+}

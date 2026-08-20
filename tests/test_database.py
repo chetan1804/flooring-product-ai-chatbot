@@ -40,3 +40,5 @@ def test_migration_prepares_pgvector_jsonb_constraints_and_indexes() -> None:
     assert "CHECK (btrim(swatch) <> '')" in sql
     assert "USING GIN (metadata)" in sql
     assert "WHERE price IS NOT NULL" in sql
+    assert "CREATE TABLE IF NOT EXISTS chatbot_sessions" in sql
+    assert "idx_chatbot_sessions_expires_at" in sql

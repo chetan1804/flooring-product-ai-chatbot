@@ -1,10 +1,11 @@
 # AI-Powered Flooring Product Recommendation Chatbot
 
-This repository currently implements Steps 1 through 9: bounded-memory catalog profiling,
+This repository implements all 10 planned steps: bounded-memory catalog profiling,
 PostgreSQL ingestion, embeddings, hybrid retrieval, and Pydantic-validated AI customer
 requirement extraction, plus a LangGraph conversational agent and deterministic flooring
 business-rule ranking with clickable catalog-backed recommendation cards, a FastAPI
-backend, a framework-independent JavaScript widget, and registered multi-site installation.
+backend, a framework-independent JavaScript widget, registered multi-site installation,
+durable production state, containerization, and AWS operations guidance.
 
 ## Setup
 
@@ -238,14 +239,15 @@ Available routes:
 | Method | Route | Purpose |
 | --- | --- | --- |
 | `GET` | `/api/health` | Service health |
+| `GET` | `/api/ready` | Database/schema readiness |
 | `GET` | `/api/config/{site_code}` | Widget display configuration |
 | `POST` | `/api/session` | Server-generated conversation session |
 | `POST` | `/api/chat` | Validated conversational recommendations |
 | `GET` | `/widget.js` | Cacheable standalone widget asset |
 
-The initial session registry and LangGraph checkpointer are in memory, so sessions reset
-when the process restarts. Durable distributed session persistence is production work for
-a later step.
+The production runtime stores sessions and LangGraph checkpoints in PostgreSQL so multiple
+API replicas share conversation state. Tests and explicitly injected local agents use a
+bounded in-memory session store.
 
 Embed the floating widget from the API origin:
 
@@ -329,3 +331,78 @@ Or render inside a specific element:
 The browser sends only `site_code` and the server-generated session ID. Product links are
 always generated from the domain in the server registry and the catalog SKU; a browser
 cannot supply or override the destination domain.
+
+## Production operation
+
+Apply all idempotent application and LangGraph checkpoint migrations as a dedicated
+deployment step:
+
+```bash
+flooring-migrate
+```
+
+Production startup fails fast on invalid settings. In addition to database, OpenAI, and
+site configuration, set:
+
+```dotenv
+APP_ENV=production
+LOG_LEVEL=INFO
+ALLOWED_HOSTS=chatbot.example.com
+API_DOCS_ENABLED=false
+LANGGRAPH_STRICT_MSGPACK=true
+MAX_REQUEST_BODY_BYTES=16384
+SESSION_TTL_SECONDS=86400
+DATABASE_POOL_MIN_SIZE=1
+DATABASE_POOL_MAX_SIZE=10
+DATABASE_POOL_TIMEOUT_SECONDS=30
+OPENAI_TIMEOUT_SECONDS=30
+OPENAI_MAX_RETRIES=2
+```
+
+Use exactly one site-registry source. Local deployments normally use `SITE_CONFIG_PATH`;
+ECS injects `SITE_CONFIG_JSON` from Secrets Manager.
+
+Build and run the non-root container locally after providing a reachable PostgreSQL
+database and configuration:
+
+```bash
+docker build -t flooring-chatbot:local .
+docker run --rm -p 8000:8000 --env-file .env \
+  -e SITE_CONFIG_PATH=/run/config/sites.json \
+  --mount type=bind,src=/absolute/path/to/config/sites.json,dst=/run/config/sites.json,readonly \
+  flooring-chatbot:local
+```
+
+Replace `/absolute/path/to/config/sites.json` with the full path to your local private
+site configuration. In ECS, use `SITE_CONFIG_JSON` from AWS Secrets Manager instead.
+
+The API emits one-line JSON logs suitable for CloudWatch. Request logs include correlation
+ID, method, path, status, and latency. Recommendation events add site/session identifiers,
+action, and result count without logging customer text. Production responses include
+request IDs and security headers; OpenAI operations and database pool acquisition have
+bounded timeouts.
+
+Deployment and operating documentation:
+
+- [AWS deployment runbook](deploy/aws/README.md)
+- [ECS task definition example](deploy/aws/ecs-task-definition.example.json)
+- [CloudWatch dashboard example](deploy/aws/cloudwatch-dashboard.example.json)
+- [Security review](SECURITY.md)
+- [Client installation guide](docs/CLIENT_INSTALLATION.md)
+
+## Final verification
+
+```bash
+pytest
+ruff check .
+python -m compileall -q src tests
+node --check src/flooring_catalog/static/widget.js
+docker build -t flooring-chatbot:verify .
+```
+
+The PostgreSQL integration test is opt-in and must target a disposable database:
+
+```bash
+TEST_DATABASE_URL=postgresql://user:password@localhost:5432/flooring_test \
+  pytest -m integration
+```
