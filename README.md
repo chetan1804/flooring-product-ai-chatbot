@@ -400,6 +400,15 @@ node --check src/flooring_catalog/static/widget.js
 docker build -t flooring-chatbot:verify .
 ```
 
+Install Chromium once, then run the browser end-to-end suite against its isolated local
+FastAPI test server. The suite uses a deterministic fake recommendation agent and does not
+call OpenAI or modify the catalog database:
+
+```bash
+python -m playwright install chromium
+pytest e2e_tests --browser chromium
+```
+
 The PostgreSQL integration test is opt-in and must target a disposable database:
 
 ```bash
