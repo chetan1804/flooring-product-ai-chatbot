@@ -52,7 +52,11 @@
       background: #fff; border: 1px solid #d8e1dc; border-radius: 16px; overflow: hidden;
       box-shadow: 0 16px 48px #0003; display: flex; flex-direction: column; }
     .fc-floating .fc-panel { margin-bottom: 10px; } .fc-hidden { display: none; }
-    .fc-header { background: #176b45; color: white; padding: 14px 16px; font-weight: 700; }
+    .fc-header { background: #176b45; color: white; padding: 10px 12px 10px 16px;
+      font-weight: 700; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .fc-close { border: 0; background: transparent; color: white; width: 32px; height: 32px;
+      border-radius: 8px; cursor: pointer; font: 24px/1 system-ui, sans-serif; }
+    .fc-close:hover, .fc-close:focus-visible { background: #ffffff24; outline: 2px solid #ffffffaa; }
     .fc-messages { flex: 1; overflow-y: auto; padding: 14px; background: #f5f8f6; }
     .fc-message { max-width: 86%; margin: 0 0 10px; padding: 9px 11px; border-radius: 12px;
       white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -77,7 +81,12 @@
 
   const root = element("div", "fc-root");
   const panel = element("section", "fc-panel");
-  const header = element("div", "fc-header", "Flooring Assistant");
+  const header = element("div", "fc-header");
+  const headerTitle = element("span", "fc-header-title", "Flooring Assistant");
+  const close = element("button", "fc-close", "\u00d7");
+  close.type = "button";
+  close.setAttribute("aria-label", "Close chat");
+  header.append(headerTitle, close);
   const messages = element("div", "fc-messages");
   const form = element("form", "fc-form");
   const input = element("input", "fc-input");
@@ -107,7 +116,23 @@
       if (opening) input.focus();
     });
     root.append(toggle);
+  } else {
+    toggle = element("button", "fc-toggle fc-hidden", "Open chat");
+    toggle.type = "button";
+    toggle.addEventListener("click", function () {
+      panel.classList.remove("fc-hidden");
+      toggle.classList.add("fc-hidden");
+      input.focus();
+    });
+    root.append(toggle);
   }
+
+  close.addEventListener("click", function () {
+    panel.classList.add("fc-hidden");
+    if (targetSelector) toggle.classList.remove("fc-hidden");
+    else toggle.setAttribute("aria-expanded", "false");
+    toggle.focus();
+  });
 
   function addMessage(role, text) {
     const node = element("div", `fc-message fc-${role}`, text);
@@ -165,7 +190,7 @@
     const loading = addStatus("Connecting…", false);
     try {
       const config = await request(`/api/config/${encodeURIComponent(siteCode)}`);
-      header.textContent = config.chatbot_title;
+      headerTitle.textContent = config.chatbot_title;
       if (!requestedPosition && config.position && root.classList.contains("fc-floating")) {
         root.classList.remove("fc-bottom-left", "fc-bottom-right");
         root.classList.add(`fc-${config.position}`);

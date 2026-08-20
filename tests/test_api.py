@@ -114,6 +114,7 @@ def test_health_site_configs_and_widget_are_served_without_database_access() -> 
         assert "script.dataset.target" in widget.text
         assert "response.recommendations" in widget.text
         assert "textContent" in widget.text
+        assert 'aria-label", "Close chat' in widget.text
 
 
 def test_sessions_generate_links_from_each_registered_site_domain() -> None:
