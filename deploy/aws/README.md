@@ -79,6 +79,10 @@ database URLs, prompts, and complete product payloads.
 - Cache `widget.js` at CloudFront; do not cache session or chat responses.
 - Run catalog ingestion and embedding updates as separate bounded ECS tasks or scheduled
   jobs, not in request-serving tasks.
+- Schedule `flooring-sync` as an EventBridge-triggered ECS task. Use
+  `--authoritative-snapshot` only for a verified complete feed, alert on non-zero exit,
+  and monitor the latest `catalog_sync_runs` status and record counts.
+- Run `flooring-evaluate` in CI and before changing ranking weights or flooring rules.
 
 ## Backup and recovery
 

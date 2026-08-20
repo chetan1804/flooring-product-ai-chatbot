@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from decimal import Decimal
 from typing import Any
+from uuid import UUID
 
 import pytest
 
@@ -118,6 +119,18 @@ def test_catalog_is_filtered_and_written_in_batches(tmp_path) -> None:
     assert stats.rejected_records == 2
     assert stats.status_not_active == 1
     assert stats.invalid_swatch == 1
+
+
+def test_sync_id_is_written_with_every_upsert(tmp_path) -> None:
+    path = tmp_path / "products.json"
+    path.write_text(
+        json.dumps([{"sku": "A", "status": "active", "swatch": "a.jpg"}]),
+        encoding="utf-8",
+    )
+    connection = FakeConnection()
+    sync_id = UUID("d24d7537-d249-4b00-9690-1c11676a4052")
+    ingest_catalog(connection, path, sync_id=sync_id)  # type: ignore[arg-type]
+    assert connection.batches[0][0]["last_seen_sync_id"] == sync_id
 
 
 def test_batch_size_must_be_positive(tmp_path) -> None:

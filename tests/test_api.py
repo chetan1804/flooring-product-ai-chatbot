@@ -9,6 +9,7 @@ from flooring_catalog.agent.models import (
     AgentTurnResult,
     ConversationPreferences,
 )
+from flooring_catalog.analytics import AnalyticsEventType, InMemoryAnalyticsStore
 from flooring_catalog.api import create_app
 from flooring_catalog.ranking.models import RankingScore, ScoreComponent, ScoreComponentName
 from flooring_catalog.recommendations import ProductUrlBuilder
@@ -115,6 +116,8 @@ def test_health_site_configs_and_widget_are_served_without_database_access() -> 
         assert "response.recommendations" in widget.text
         assert "textContent" in widget.text
         assert 'aria-label", "Close chat' in widget.text
+        assert 'trackEvent("widget_opened"' in widget.text
+        assert 'request("/api/feedback"' in widget.text
 
 
 def test_sessions_generate_links_from_each_registered_site_domain() -> None:
@@ -227,3 +230,82 @@ def test_cors_uses_the_union_of_registered_storefront_origins() -> None:
     assert allowed.status_code == 200
     assert allowed.headers["access-control-allow-origin"] == "https://www.second.example"
     assert "access-control-allow-origin" not in denied.headers
+
+
+def test_analytics_feedback_and_product_clicks_are_session_bound() -> None:
+    analytics = InMemoryAnalyticsStore()
+    app = create_app(agent=FakeAgent(), sites=site_registry(), analytics=analytics)
+    with TestClient(app) as client:
+        session = client.post("/api/session", json={"site_code": "CLIENT001"}).json()
+        assert (
+            client.post(
+                "/api/events",
+                json={"session_id": session["session_id"], "event_type": "widget_opened"},
+            ).status_code
+            == 202
+        )
+        chat = client.post(
+            "/api/chat",
+            json={"session_id": session["session_id"], "message": "Kitchen"},
+        ).json()
+        assert (
+            client.post(
+                "/api/events",
+                json={
+                    "session_id": session["session_id"],
+                    "event_type": "product_clicked",
+                    "interaction_id": chat["interaction_id"],
+                    "sku": "ABC123",
+                },
+            ).status_code
+            == 202
+        )
+        first_feedback = client.post(
+            "/api/feedback",
+            json={
+                "session_id": session["session_id"],
+                "interaction_id": chat["interaction_id"],
+                "rating": "helpful",
+            },
+        )
+        replacement_feedback = client.post(
+            "/api/feedback",
+            json={
+                "session_id": session["session_id"],
+                "interaction_id": chat["interaction_id"],
+                "rating": "not_helpful",
+                "reason": "irrelevant",
+            },
+        )
+
+    assert first_feedback.status_code == replacement_feedback.status_code == 201
+    assert [event.event_type for event in analytics.events] == [
+        AnalyticsEventType.SESSION_CREATED,
+        AnalyticsEventType.WIDGET_OPENED,
+        AnalyticsEventType.CHAT_COMPLETED,
+        AnalyticsEventType.PRODUCT_CLICKED,
+    ]
+    assert analytics.events[2].recommendation_count == 1
+    assert analytics.events[3].sku == "ABC123"
+    assert len(analytics.feedback) == 1
+    assert analytics.feedback[0].rating.value == "not_helpful"
+
+
+def test_feedback_rejects_unknown_interactions_and_invalid_event_shapes() -> None:
+    app = create_app(agent=FakeAgent(), sites=site_registry())
+    with TestClient(app) as client:
+        session = client.post("/api/session", json={"site_code": "CLIENT001"}).json()
+        invalid_click = client.post(
+            "/api/events",
+            json={"session_id": session["session_id"], "event_type": "product_clicked"},
+        )
+        unknown_feedback = client.post(
+            "/api/feedback",
+            json={
+                "session_id": session["session_id"],
+                "interaction_id": "d24d7537-d249-4b00-9690-1c11676a4052",
+                "rating": "helpful",
+            },
+        )
+    assert invalid_click.status_code == 422
+    assert unknown_feedback.status_code == 404

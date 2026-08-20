@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
+from uuid import UUID
 
 from psycopg import Connection
 
@@ -34,11 +35,11 @@ DEDICATED_FIELDS = frozenset(
 UPSERT_PRODUCT_SQL = """
 INSERT INTO catalog_products (
     sku, name, z_prod_type, status, swatch, price, brand, material,
-    color, style, description, gallery_images, waterproof, metadata
+    color, style, description, gallery_images, waterproof, metadata, last_seen_sync_id
 ) VALUES (
     %(sku)s, %(name)s, %(z_prod_type)s, %(status)s, %(swatch)s, %(price)s,
     %(brand)s, %(material)s, %(color)s, %(style)s, %(description)s,
-    %(gallery_images)s, %(waterproof)s, %(metadata)s::jsonb
+    %(gallery_images)s, %(waterproof)s, %(metadata)s::jsonb, %(last_seen_sync_id)s
 )
 ON CONFLICT (sku) DO UPDATE SET
     name = EXCLUDED.name,
@@ -54,6 +55,7 @@ ON CONFLICT (sku) DO UPDATE SET
     gallery_images = EXCLUDED.gallery_images,
     waterproof = EXCLUDED.waterproof,
     metadata = EXCLUDED.metadata,
+    last_seen_sync_id = EXCLUDED.last_seen_sync_id,
     updated_at = now()
 """
 
@@ -94,7 +96,7 @@ class ProductRecord:
     waterproof: str | None
     metadata: dict[str, Any]
 
-    def parameters(self) -> dict[str, Any]:
+    def parameters(self, *, sync_id: UUID | None = None) -> dict[str, Any]:
         values = {
             "sku": self.sku,
             "name": self.name,
@@ -111,6 +113,7 @@ class ProductRecord:
             "waterproof": self.waterproof,
             # Passing serialized JSON keeps the SQL cast explicit and parameterized.
             "metadata": json.dumps(self.metadata, ensure_ascii=False, separators=(",", ":")),
+            "last_seen_sync_id": sync_id,
         }
         return values
 
@@ -167,10 +170,18 @@ class IngestionStats:
         return self.source_records - self.prepared_records
 
 
-def _write_batch(connection: Connection, batch: list[ProductRecord]) -> None:
+def _write_batch(
+    connection: Connection,
+    batch: list[ProductRecord],
+    *,
+    sync_id: UUID | None = None,
+) -> None:
     try:
         with connection.cursor() as cursor:
-            cursor.executemany(UPSERT_PRODUCT_SQL, [record.parameters() for record in batch])
+            cursor.executemany(
+                UPSERT_PRODUCT_SQL,
+                [record.parameters(sync_id=sync_id) for record in batch],
+            )
         connection.commit()
     except Exception:
         connection.rollback()
@@ -182,6 +193,7 @@ def ingest_catalog(
     catalog_path: str | Path,
     *,
     batch_size: int = 1000,
+    sync_id: UUID | None = None,
 ) -> IngestionStats:
     """Stream, filter, normalize, and upsert a catalog in committed batches."""
 
@@ -199,13 +211,13 @@ def ingest_catalog(
         stats.prepared_records += 1
         batch.append(record)
         if len(batch) >= batch_size:
-            _write_batch(connection, batch)
+            _write_batch(connection, batch, sync_id=sync_id)
             stats.upserted_records += len(batch)
             stats.batches_committed += 1
             batch.clear()
 
     if batch:
-        _write_batch(connection, batch)
+        _write_batch(connection, batch, sync_id=sync_id)
         stats.upserted_records += len(batch)
         stats.batches_committed += 1
     return stats

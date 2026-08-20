@@ -77,6 +77,11 @@
     .fc-meta { color: #526158; font-size: 12px; margin-bottom: 6px; }
     .fc-reason { margin: 5px 0; }
     .fc-link { display: inline-block; margin-top: 7px; color: #176b45; font-weight: 700; }
+    .fc-feedback { display: flex; align-items: center; gap: 7px; margin: 8px 0 12px; color: #526158;
+      font-size: 12px; }
+    .fc-feedback-button { border: 1px solid #aebcb4; border-radius: 999px; background: white;
+      color: #17211b; padding: 5px 9px; cursor: pointer; font: inherit; }
+    .fc-feedback-button:disabled { opacity: .55; cursor: default; }
   `;
 
   const root = element("div", "fc-root");
@@ -147,7 +152,7 @@
     return node;
   }
 
-  function renderCard(card) {
+  function renderCard(card, interactionId) {
     const wrapper = element("article", "fc-card");
     const imageUrl = safeHttpUrl(card.image || card.swatch);
     if (imageUrl) {
@@ -170,6 +175,9 @@
       link.href = productUrl;
       link.target = "_blank";
       link.rel = "noopener noreferrer";
+      link.addEventListener("click", function () {
+        trackEvent("product_clicked", { interaction_id: interactionId, sku: card.sku });
+      });
       body.appendChild(link);
     }
     wrapper.appendChild(body);
@@ -184,6 +192,48 @@
   }
 
   let sessionId = null;
+  function trackEvent(eventType, details) {
+    if (!sessionId) return;
+    request("/api/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(Object.assign({ session_id: sessionId, event_type: eventType }, details))
+    }).catch(function () { /* Analytics must never interrupt the customer experience. */ });
+  }
+
+  function renderFeedback(interactionId) {
+    const wrapper = element("div", "fc-feedback");
+    wrapper.appendChild(element("span", "", "Was this helpful?"));
+    const options = [
+      ["helpful", "Yes"],
+      ["not_helpful", "No"]
+    ];
+    options.forEach(function (option) {
+      const button = element("button", "fc-feedback-button", option[1]);
+      button.type = "button";
+      button.addEventListener("click", async function () {
+        wrapper.querySelectorAll("button").forEach(function (item) { item.disabled = true; });
+        try {
+          await request("/api/feedback", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              session_id: sessionId,
+              interaction_id: interactionId,
+              rating: option[0]
+            })
+          });
+          wrapper.textContent = "Thanks for your feedback.";
+        } catch (_error) {
+          wrapper.textContent = "Feedback could not be saved.";
+          wrapper.classList.add("fc-error");
+        }
+      });
+      wrapper.appendChild(button);
+    });
+    messages.appendChild(wrapper);
+  }
+
   async function initialize() {
     input.disabled = true;
     send.disabled = true;
@@ -201,6 +251,7 @@
         body: JSON.stringify({ site_code: siteCode })
       });
       sessionId = session.session_id;
+      trackEvent("widget_opened", {});
       loading.remove();
       addMessage("assistant", "Tell me about the room and the flooring look you prefer.");
       input.disabled = false;
@@ -228,7 +279,10 @@
       });
       loading.remove();
       addMessage("assistant", response.message);
-      (response.recommendations || []).forEach(renderCard);
+      (response.recommendations || []).forEach(function (card) {
+        renderCard(card, response.interaction_id);
+      });
+      renderFeedback(response.interaction_id);
     } catch (error) {
       loading.textContent = error.message || "Something went wrong. Please try again.";
       loading.classList.add("fc-error");

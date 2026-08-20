@@ -1,0 +1,56 @@
+{
+  "name": "flooring-business-rules",
+  "version": "1.0.0",
+  "cases": [
+    {
+      "case_id": "bathroom_waterproof",
+      "description": "Waterproof flooring must outrank non-waterproof flooring for a bathroom.",
+      "preferences": {"rooms": ["bathroom"]},
+      "candidates": [
+        {"sku": "WET", "product_type": "lvt", "waterproof": "Yes", "retrieval_score": 0.8},
+        {"sku": "DRY", "product_type": "hardwood", "waterproof": "No", "retrieval_score": 0.8}
+      ],
+      "acceptable_top_skus": ["WET"]
+    },
+    {
+      "case_id": "kitchen_durability",
+      "description": "Durable waterproof flooring should lead for a busy family kitchen.",
+      "preferences": {"rooms": ["kitchen"], "has_kids": true, "traffic_level": "high"},
+      "candidates": [
+        {"sku": "DURABLE", "product_type": "lvt", "waterproof": "Yes", "metadata": {"features": ["Scratch Resistant", "Stain Resistant"], "wear_layer": "20 mil"}, "retrieval_score": 0.78},
+        {"sku": "DELICATE", "product_type": "hardwood", "waterproof": "No", "retrieval_score": 0.82}
+      ],
+      "acceptable_top_skus": ["DURABLE"]
+    },
+    {
+      "case_id": "commercial_high_traffic",
+      "description": "Explicit commercial durability evidence should win for a high-traffic office.",
+      "preferences": {"rooms": ["office"], "traffic_level": "high", "usage": "commercial"},
+      "candidates": [
+        {"sku": "COMMERCIAL", "product_type": "tile", "metadata": {"application": "Commercial", "features": "Heavy Traffic"}, "retrieval_score": 0.75},
+        {"sku": "RESIDENTIAL", "product_type": "carpet", "metadata": {"application": "Residential"}, "retrieval_score": 0.8}
+      ],
+      "acceptable_top_skus": ["COMMERCIAL"]
+    },
+    {
+      "case_id": "budget_fit",
+      "description": "An in-budget product should outrank a similarly relevant over-budget product.",
+      "preferences": {"budget_max_per_sq_ft": "5.00"},
+      "candidates": [
+        {"sku": "IN_BUDGET", "product_type": "lvt", "price": "4.50", "retrieval_score": 0.8},
+        {"sku": "OVER_BUDGET", "product_type": "lvt", "price": "8.00", "retrieval_score": 0.82}
+      ],
+      "acceptable_top_skus": ["IN_BUDGET"]
+    },
+    {
+      "case_id": "bedroom_comfort",
+      "description": "Carpet should receive the comfort advantage for bedroom use.",
+      "preferences": {"rooms": ["bedroom"]},
+      "candidates": [
+        {"sku": "CARPET", "product_type": "carpet", "retrieval_score": 0.78},
+        {"sku": "TILE", "product_type": "tile", "retrieval_score": 0.8}
+      ],
+      "acceptable_top_skus": ["CARPET"]
+    }
+  ]
+}

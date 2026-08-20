@@ -42,3 +42,8 @@ def test_migration_prepares_pgvector_jsonb_constraints_and_indexes() -> None:
     assert "WHERE price IS NOT NULL" in sql
     assert "CREATE TABLE IF NOT EXISTS chatbot_sessions" in sql
     assert "idx_chatbot_sessions_expires_at" in sql
+    assert "CREATE TABLE IF NOT EXISTS analytics_events" in sql
+    assert "CREATE TABLE IF NOT EXISTS recommendation_feedback" in sql
+    assert "CREATE TABLE IF NOT EXISTS catalog_sync_runs" in sql
+    assert "last_seen_sync_id UUID" in sql
+    assert "IN ('active', 'inactive')" in sql

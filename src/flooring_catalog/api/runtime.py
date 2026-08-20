@@ -10,6 +10,7 @@ from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
 
 from flooring_catalog.agent import FlooringConversationAgent, build_flooring_agent_graph
+from flooring_catalog.analytics import PostgresAnalyticsStore
 from flooring_catalog.api.sessions import PostgresSessionStore
 from flooring_catalog.database import DatabaseSettings
 from flooring_catalog.embeddings import EmbeddingSettings, OpenAIEmbeddingProvider
@@ -50,6 +51,7 @@ class RuntimeResources:
     agent: FlooringConversationAgent
     pool: ConnectionPool
     sessions: PostgresSessionStore
+    analytics: PostgresAnalyticsStore
 
     def ready(self) -> bool:
         with self.pool.connection() as connection, connection.cursor() as cursor:
@@ -57,7 +59,9 @@ class RuntimeResources:
                 """
 SELECT to_regclass('public.catalog_products') IS NOT NULL
    AND to_regclass('public.chatbot_sessions') IS NOT NULL
-   AND to_regclass('public.checkpoints') IS NOT NULL AS ready
+   AND to_regclass('public.checkpoints') IS NOT NULL
+   AND to_regclass('public.analytics_events') IS NOT NULL
+   AND to_regclass('public.recommendation_feedback') IS NOT NULL AS ready
 """
             )
             row = cursor.fetchone()
@@ -113,10 +117,12 @@ def build_runtime_resources(settings: ProductionSettings) -> RuntimeResources:
             pool,
             ttl_seconds=settings.session_ttl_seconds,
         )
+        analytics = PostgresAnalyticsStore(pool)
         return RuntimeResources(
             agent=FlooringConversationAgent(graph),
             pool=pool,
             sessions=sessions,
+            analytics=analytics,
         )
     except Exception:
         pool.close()

@@ -17,6 +17,8 @@
 - Widget text is inserted with DOM `textContent`; links are restricted to HTTP(S) and use
   `noopener noreferrer`.
 - JSON logs omit customer text, secrets, prompts, and complete catalog records.
+- Analytics events omit customer message text, and feedback uses fixed categories rather
+  than free-form customer content.
 - Strict LangGraph MessagePack deserialization is mandatory in production.
 - The container runs as a non-root user with an optional read-only root filesystem.
 

@@ -26,9 +26,16 @@ def test_customer_can_open_chat_and_view_a_recommendation(
     expect(page.locator(".fc-card-title")).to_have_text("Coastal Oak")
     expect(page.locator(".fc-meta")).to_contain_text("SKU: ABC123 · $4.75")
     expect(page.locator(".fc-reason")).to_contain_text("waterproof luxury vinyl")
-    expect(page.get_by_role("link", name="View product")).to_have_attribute(
+    product_link = page.get_by_role("link", name="View product")
+    expect(product_link).to_have_attribute(
         "href", f"{browser_test_server.base_url}/?s=ABC123"
     )
+    with page.expect_popup() as popup_info:
+        product_link.click()
+    popup_info.value.close()
+
+    page.get_by_role("button", name="Yes").click()
+    expect(page.get_by_text("Thanks for your feedback.")).to_be_visible()
 
     assert browser_test_server.agent.calls[-1][1:] == (message, browser_test_server.base_url)
 

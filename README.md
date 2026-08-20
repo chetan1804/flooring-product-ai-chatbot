@@ -83,6 +83,18 @@ flooring-ingest /absolute/path/to/products.json --apply-schema
 flooring-embed
 ```
 
+For a scheduled refresh, use the combined synchronization command. It prevents overlapping
+runs, records run statistics, ingests changed products, and embeds only missing or stale
+vectors:
+
+```bash
+flooring-sync /absolute/path/to/products.json
+```
+
+Use `--authoritative-snapshot` only when the input is a complete catalog snapshot. That
+mode deactivates previously searchable products that are absent or no longer eligible in
+the new snapshot. Do not use it with a partial/delta feed.
+
 Exact structured filters work without an embedding API call:
 
 ```bash
@@ -243,6 +255,8 @@ Available routes:
 | `GET` | `/api/config/{site_code}` | Widget display configuration |
 | `POST` | `/api/session` | Server-generated conversation session |
 | `POST` | `/api/chat` | Validated conversational recommendations |
+| `POST` | `/api/events` | Privacy-safe widget and product-click analytics |
+| `POST` | `/api/feedback` | Structured recommendation feedback |
 | `GET` | `/widget.js` | Cacheable standalone widget asset |
 
 The production runtime stores sessions and LangGraph checkpoints in PostgreSQL so multiple
@@ -381,6 +395,25 @@ ID, method, path, status, and latency. Recommendation events add site/session id
 action, and result count without logging customer text. Production responses include
 request IDs and security headers; OpenAI operations and database pool acquisition have
 bounded timeouts.
+
+Analytics persistence intentionally excludes customer message text. It records session,
+widget-open, chat outcome, recommendation count, and product-click events. Recommendation
+feedback is limited to `helpful`/`not_helpful` plus an optional allow-listed reason.
+
+## Recommendation quality evaluations
+
+The versioned corpus in `evals/recommendation_cases.json` covers moisture, durability,
+commercial traffic, budget, and bedroom-comfort behavior. Deterministic graders check the
+top result, required and forbidden products, and explainability without making an OpenAI
+request:
+
+```bash
+flooring-evaluate
+```
+
+The command emits a machine-readable JSON report and exits non-zero when the configured
+minimum pass rate is not met. Add a focused regression case whenever ranking behavior is
+changed or a recommendation-quality problem is found.
 
 Deployment and operating documentation:
 

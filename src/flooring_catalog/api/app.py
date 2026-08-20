@@ -7,6 +7,7 @@ from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Protocol
+from uuid import uuid4
 
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -14,10 +15,19 @@ from fastapi.responses import FileResponse
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from flooring_catalog.agent.models import AgentTurnResult
+from flooring_catalog.analytics import (
+    AnalyticsEvent,
+    AnalyticsEventType,
+    InMemoryAnalyticsStore,
+    RecommendationFeedback,
+)
 from flooring_catalog.api.models import (
+    AcceptedResponse,
     ChatRequest,
     ChatResponse,
+    ClientAnalyticsEventRequest,
     HealthResponse,
+    RecommendationFeedbackRequest,
     SessionCreateRequest,
     SessionResponse,
     WidgetConfigResponse,
@@ -42,6 +52,14 @@ class ConversationAgent(Protocol):
         """Run one validated conversation turn."""
 
 
+class AnalyticsStore(Protocol):
+    def record(self, event: AnalyticsEvent) -> None:
+        """Persist one privacy-safe event."""
+
+    def submit_feedback(self, feedback: RecommendationFeedback) -> None:
+        """Create or replace structured feedback for one interaction."""
+
+
 def create_app(
     *,
     agent: ConversationAgent | None = None,
@@ -49,6 +67,7 @@ def create_app(
     sessions: SessionStore | None = None,
     production: ProductionSettings | None = None,
     readiness_check: Callable[[], bool] | None = None,
+    analytics: AnalyticsStore | None = None,
 ) -> FastAPI:
     """Create an API; production resources are lazy and tests can inject fakes."""
 
@@ -61,6 +80,9 @@ def create_app(
             max_sessions=production_settings.max_in_memory_sessions,
         )
     runtime: RuntimeResources | None = None
+    analytics_store = analytics
+    if analytics_store is None and agent is not None:
+        analytics_store = InMemoryAnalyticsStore()
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -72,12 +94,15 @@ def create_app(
             app.state.agent = runtime.agent
             app.state.session_store = runtime.sessions
             app.state.readiness_check = runtime.ready
+            app.state.analytics = runtime.analytics
         if session_store is not None:
             app.state.session_store = session_store
         if readiness_check is not None:
             app.state.readiness_check = readiness_check
         elif not hasattr(app.state, "readiness_check"):
             app.state.readiness_check = lambda: True
+        if analytics_store is not None:
+            app.state.analytics = analytics_store
         yield
         if runtime is not None:
             runtime.close()
@@ -137,6 +162,15 @@ def create_app(
         if origin is not None and origin not in site.allowed_origins:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Origin not allowed")
 
+    def record_event(event: AnalyticsEvent) -> None:
+        try:
+            app.state.analytics.record(event)
+        except Exception:
+            LOGGER.exception(
+                "Analytics event persistence failed for type=%s",
+                event.event_type.value,
+            )
+
     @app.get("/api/config/{site_code}", response_model=WidgetConfigResponse)
     def widget_config(site_code: str, request: Request) -> WidgetConfigResponse:
         site = registered_site(site_code)
@@ -156,6 +190,13 @@ def create_app(
         site = registered_site(payload.site_code)
         validate_origin(request, site)
         record = request.app.state.session_store.create(site.site_code)
+        record_event(
+            AnalyticsEvent(
+                site_code=site.site_code,
+                session_id=record.session_id,
+                event_type=AnalyticsEventType.SESSION_CREATED,
+            )
+        )
         LOGGER.info(
             "session_created",
             extra={
@@ -178,6 +219,7 @@ def create_app(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown session")
         site = registered_site(record.site_code)
         validate_origin(request, site)
+        interaction_id = uuid4()
         try:
             result = request.app.state.agent.respond(
                 thread_id=str(record.session_id),
@@ -190,6 +232,14 @@ def create_app(
                 detail=str(error),
             ) from error
         except Exception as error:
+            record_event(
+                AnalyticsEvent(
+                    site_code=record.site_code,
+                    session_id=record.session_id,
+                    interaction_id=interaction_id,
+                    event_type=AnalyticsEventType.CHAT_FAILED,
+                )
+            )
             LOGGER.exception(
                 "Chat processing failed for site=%s session=%s",
                 record.site_code,
@@ -201,9 +251,20 @@ def create_app(
             ) from error
         response = ChatResponse(
             session_id=record.session_id,
+            interaction_id=interaction_id,
             action=result.action,
             message=result.message,
             recommendations=result.recommendations,
+        )
+        record_event(
+            AnalyticsEvent(
+                site_code=record.site_code,
+                session_id=record.session_id,
+                interaction_id=interaction_id,
+                event_type=AnalyticsEventType.CHAT_COMPLETED,
+                action=result.action.value,
+                recommendation_count=len(result.recommendations),
+            )
         )
         LOGGER.info(
             "recommendation_completed",
@@ -217,6 +278,61 @@ def create_app(
             },
         )
         return response
+
+    @app.post("/api/events", response_model=AcceptedResponse, status_code=status.HTTP_202_ACCEPTED)
+    def client_event(
+        payload: ClientAnalyticsEventRequest,
+        request: Request,
+    ) -> AcceptedResponse:
+        record = request.app.state.session_store.get(payload.session_id)
+        if record is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown session")
+        site = registered_site(record.site_code)
+        validate_origin(request, site)
+        record_event(
+            AnalyticsEvent(
+                site_code=site.site_code,
+                session_id=record.session_id,
+                interaction_id=payload.interaction_id,
+                event_type=payload.event_type,
+                sku=payload.sku,
+            )
+        )
+        return AcceptedResponse()
+
+    @app.post(
+        "/api/feedback",
+        response_model=AcceptedResponse,
+        status_code=status.HTTP_201_CREATED,
+    )
+    def recommendation_feedback(
+        payload: RecommendationFeedbackRequest,
+        request: Request,
+    ) -> AcceptedResponse:
+        record = request.app.state.session_store.get(payload.session_id)
+        if record is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Unknown session")
+        site = registered_site(record.site_code)
+        validate_origin(request, site)
+        try:
+            request.app.state.analytics.submit_feedback(
+                RecommendationFeedback(
+                    site_code=site.site_code,
+                    session_id=record.session_id,
+                    interaction_id=payload.interaction_id,
+                    rating=payload.rating,
+                    reason=payload.reason,
+                )
+            )
+        except ValueError as error:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(error)) from error
+        except Exception as error:
+            LOGGER.exception("Feedback persistence failed")
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Feedback is temporarily unavailable",
+            ) from error
+        return AcceptedResponse()
 
     @app.get("/widget.js", include_in_schema=False)
     def widget_script() -> FileResponse:
