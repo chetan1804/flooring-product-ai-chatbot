@@ -11,6 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from flooring_catalog.agent.models import AgentAction
 from flooring_catalog.analytics import AnalyticsEventType, FeedbackRating, FeedbackReason
 from flooring_catalog.recommendations.models import RecommendationCard
+from flooring_catalog.sites.models import FlooringCalculatorConfig, WidgetTheme
 
 
 class SessionCreateRequest(BaseModel):
@@ -56,6 +57,8 @@ class WidgetConfigResponse(BaseModel):
     site_code: str
     chatbot_title: str
     position: str
+    theme: WidgetTheme
+    calculator: FlooringCalculatorConfig
 
 
 class ClientAnalyticsEventRequest(BaseModel):

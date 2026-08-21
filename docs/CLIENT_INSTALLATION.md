@@ -14,6 +14,10 @@ The chatbot operator must register:
 
 The operator then supplies the hosted widget URL and site code.
 
+The operator can also configure brand colors, launcher text, welcome copy, an optional logo,
+and calculator defaults in the server-side site registry. These settings are returned by
+the widget configuration endpoint; clients should not copy theme values into JavaScript.
+
 ## Floating installation
 
 Place this before the closing `</body>` tag. Loading is asynchronous and does not require
@@ -67,6 +71,8 @@ catalog image hosts in `img-src`. Keep the policy as narrow as the actual deploy
 4. Confirm recommendation cards show catalog facts and missing prices say unavailable.
 5. Confirm every product link targets the registered storefront as `/?s=ENCODED_SKU`.
 6. Test mobile layout, keyboard submission, loading errors, and both approved origins.
+7. Verify the configured logo, colors, launcher text, calculator waste default, carton
+   rounding, and material-cost disclaimer.
 
 An `Unknown site` or `Origin not allowed` response means the operator’s registry must be
 corrected; do not work around it by widening CORS to every origin.

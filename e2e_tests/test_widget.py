@@ -10,11 +10,12 @@ def test_customer_can_open_chat_and_view_a_recommendation(
 ) -> None:
     page.goto(f"{browser_test_server.base_url}/preview")
 
-    launcher = page.get_by_role("button", name="Chat with us")
+    launcher = page.get_by_role("button", name="Find my floor")
     expect(launcher).to_be_visible()
+    expect(launcher).to_have_css("background-color", "rgb(91, 44, 111)")
     launcher.click()
     expect(page.get_by_text("E2E Flooring Guide")).to_be_visible()
-    greeting = page.get_by_text("Tell me about the room and the flooring look you prefer.")
+    greeting = page.get_by_text("Let's find your ideal floor.")
     expect(greeting).to_be_visible()
 
     message = "I need waterproof luxury vinyl for my kitchen"
@@ -45,10 +46,10 @@ def test_floating_and_inline_widgets_can_be_closed_and_reopened(
     browser_test_server: BrowserTestServer,
 ) -> None:
     page.goto(f"{browser_test_server.base_url}/preview")
-    page.get_by_role("button", name="Chat with us").click()
+    page.get_by_role("button", name="Find my floor").click()
     page.get_by_role("button", name="Close chat").click()
     expect(page.locator(".fc-panel")).to_be_hidden()
-    expect(page.get_by_role("button", name="Chat with us")).to_be_focused()
+    expect(page.get_by_role("button", name="Find my floor")).to_be_focused()
 
     page.goto(f"{browser_test_server.base_url}/preview-inline")
     page.get_by_role("button", name="Close chat").click()
@@ -80,7 +81,7 @@ def test_floating_panel_fits_a_mobile_viewport(
 ) -> None:
     page.set_viewport_size({"width": 360, "height": 640})
     page.goto(f"{browser_test_server.base_url}/preview")
-    page.get_by_role("button", name="Chat with us").click()
+    page.get_by_role("button", name="Find my floor").click()
 
     panel = page.locator(".fc-panel")
     expect(panel).to_be_visible()
@@ -91,3 +92,30 @@ def test_floating_panel_fits_a_mobile_viewport(
     assert bounds["x"] + bounds["width"] <= 360
     assert bounds["y"] + bounds["height"] <= 640
     expect(page.get_by_role("button", name="Close chat")).to_be_visible()
+
+
+def test_product_calculator_estimates_area_cartons_and_material_cost(
+    page: Page,
+    browser_test_server: BrowserTestServer,
+) -> None:
+    page.goto(f"{browser_test_server.base_url}/preview")
+    page.get_by_role("button", name="Find my floor").click()
+    page.get_by_role("textbox", name="Message").fill("Waterproof kitchen flooring")
+    page.get_by_role("button", name="Send").click()
+    page.get_by_role("button", name="Estimate project").click()
+
+    selected_product = page.get_by_text(
+        "Coastal Oak · SKU ABC123 · $4.75/SF · 20 sq ft/carton"
+    )
+    expect(selected_product).to_be_visible()
+    page.get_by_label("Room length (ft)").fill("10")
+    page.get_by_label("Room width (ft)").fill("12")
+    expect(page.get_by_label("Waste allowance (%)")).to_have_value("10")
+    page.get_by_role("button", name="Calculate material").click()
+
+    result = page.locator(".fc-calculator-result")
+    expect(result).to_contain_text("120.00 sq ft")
+    expect(result).to_contain_text("132.00 sq ft")
+    expect(result).to_contain_text("Cartons required7")
+    expect(result).to_contain_text("Purchase coverage140.00 sq ft")
+    expect(result).to_contain_text("Estimated material cost$665.00")

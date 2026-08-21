@@ -99,11 +99,18 @@ def test_health_site_configs_and_widget_are_served_without_database_access() -> 
         second = client.get(
             "/api/config/CLIENT002", headers={"Origin": "https://second.example"}
         )
-        assert first.json() == {
+        first_config = first.json()
+        assert {
+            key: first_config[key]
+            for key in ("site_code", "chatbot_title", "position")
+        } == {
             "site_code": "CLIENT001",
             "chatbot_title": "First Flooring Guide",
             "position": "bottom-right",
         }
+        assert first_config["theme"]["primary_color"] == "#176b45"
+        assert first_config["theme"]["launcher_text"] == "Chat with us"
+        assert first_config["calculator"]["default_waste_percent"] == 10
         assert second.json()["position"] == "bottom-left"
         assert client.get("/api/config/UNKNOWN").status_code == 404
 
@@ -118,6 +125,8 @@ def test_health_site_configs_and_widget_are_served_without_database_access() -> 
         assert 'aria-label", "Close chat' in widget.text
         assert 'trackEvent("widget_opened"' in widget.text
         assert 'request("/api/feedback"' in widget.text
+        assert "Estimated material cost" in widget.text
+        assert "--fc-primary" in widget.text
 
 
 def test_sessions_generate_links_from_each_registered_site_domain() -> None:

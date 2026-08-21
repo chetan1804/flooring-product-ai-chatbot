@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from typing import Any, Protocol
 
 from flooring_catalog.ranking.models import RankedCandidate
@@ -38,6 +38,16 @@ def _display_value(value: Any) -> str | None:
         items = [item.strip() for item in value if isinstance(item, str) and item.strip()]
         return ", ".join(items) or None
     return None
+
+
+def _positive_decimal(value: Any) -> Decimal | None:
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        number = Decimal(str(value).strip())
+    except (InvalidOperation, ValueError):
+        return None
+    return number if number.is_finite() and number > 0 else None
 
 
 class RecommendationCardService:
@@ -82,6 +92,8 @@ class RecommendationCardService:
             swatch=product.swatch,
             image=product.gallery_images or product.swatch,
             price=product.price,
+            price_unit=_display_value(product.metadata.get("price_unit")),
+            carton_sq_ft=_positive_decimal(product.metadata.get("carton_sq_ft")),
             attributes=self._attributes(product),
             reasons=self._reasons(product, preferences),
             product_url=urls.for_sku(product.sku),

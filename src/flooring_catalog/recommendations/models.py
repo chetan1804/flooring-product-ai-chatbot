@@ -19,6 +19,8 @@ class RecommendationCard(BaseModel):
     swatch: str = Field(min_length=1)
     image: str | None = None
     price: Decimal | None = Field(default=None, gt=0)
+    price_unit: str | None = Field(default=None, min_length=1, max_length=40)
+    carton_sq_ft: Decimal | None = Field(default=None, gt=0)
     attributes: dict[str, str] = Field(default_factory=dict)
     reasons: tuple[str, ...] = Field(min_length=1)
     product_url: str = Field(min_length=1)

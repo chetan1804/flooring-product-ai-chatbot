@@ -346,6 +346,38 @@ The browser sends only `site_code` and the server-generated session ID. Product 
 always generated from the domain in the server registry and the catalog SKU; a browser
 cannot supply or override the destination domain.
 
+## Widget design customization and flooring calculator
+
+Each site may configure its own accessible theme, launcher copy, welcome message, optional
+HTTP(S) logo, and material calculator. Colors must use six-digit hex values, and configured
+foreground/background pairs must meet a minimum 4.5:1 contrast ratio.
+
+```json
+{
+  "theme": {
+    "primary_color": "#176b45",
+    "primary_text_color": "#ffffff",
+    "background_color": "#ffffff",
+    "body_text_color": "#17211b",
+    "muted_background_color": "#f5f8f6",
+    "launcher_text": "Find my floor",
+    "welcome_message": "Tell me about your room and preferred flooring look.",
+    "logo_url": "https://exampleflooring.com/logo.png"
+  },
+  "calculator": {
+    "enabled": true,
+    "default_waste_percent": 10,
+    "max_room_dimension_feet": 500,
+    "show_price_estimate": true
+  }
+}
+```
+
+The calculator is available from the chat header and each recommendation card. It computes
+room area, material including waste, cartons rounded up from catalog `carton_sq_ft`, and an
+estimated material cost when a catalog price is available. Results are explicitly estimates
+and do not include taxes, delivery, preparation, accessories, or installation labor.
+
 ## Production operation
 
 Apply all idempotent application and LangGraph checkpoint migrations as a dedicated

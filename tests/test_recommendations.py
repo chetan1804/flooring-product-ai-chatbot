@@ -43,6 +43,8 @@ def ranked_product(
             "application": "Residential",
             "features": ["Scratch Resistant", "Easy Clean"],
             "wear_layer": "20 mil",
+            "carton_sq_ft": "20.25",
+            "price_unit": "SF",
             "unapproved_dynamic_field": "must not be displayed",
         },
         semantic_similarity=0.9,
@@ -133,6 +135,8 @@ def test_recommendation_card_contains_catalog_facts_and_factual_reasons() -> Non
     assert card.swatch == "catalog.example/swatch.jpg"
     assert card.image == "catalog.example/gallery.jpg"
     assert card.price == Decimal("4.75")
+    assert card.price_unit == "SF"
+    assert card.carton_sq_ft == Decimal("20.25")
     assert card.product_url == "https://registered.example/?s=ABC+1%2F2"
     assert card.attributes == {
         "Product type": "lvt",

@@ -16,7 +16,7 @@ from flooring_catalog.api import create_app
 from flooring_catalog.ranking.models import RankingScore, ScoreComponent, ScoreComponentName
 from flooring_catalog.recommendations import ProductUrlBuilder
 from flooring_catalog.recommendations.models import RecommendationCard
-from flooring_catalog.sites import SiteConfig, SiteRegistry
+from flooring_catalog.sites import FlooringCalculatorConfig, SiteConfig, SiteRegistry, WidgetTheme
 
 
 def _available_port() -> int:
@@ -43,6 +43,8 @@ def _recommendation(client_domain: str) -> RecommendationCard:
         name="Coastal Oak",
         swatch="https://images.example/coastal-oak.jpg",
         price=Decimal("4.75"),
+        price_unit="SF",
+        carton_sq_ft=Decimal("20"),
         attributes={"Product type": "lvt", "Waterproof": "Yes"},
         reasons=("Matches your requested waterproof luxury vinyl flooring.",),
         product_url=ProductUrlBuilder(client_domain).for_sku("ABC123"),
@@ -106,6 +108,17 @@ def browser_test_server() -> Iterator[BrowserTestServer]:
                 allowed_origins=(base_url,),
                 position="bottom-right",
                 chatbot_title="E2E Flooring Guide",
+                theme=WidgetTheme(
+                    primary_color="#5b2c6f",
+                    primary_text_color="#ffffff",
+                    muted_background_color="#f8f4fa",
+                    launcher_text="Find my floor",
+                    welcome_message="Let's find your ideal floor.",
+                ),
+                calculator=FlooringCalculatorConfig(
+                    default_waste_percent=10,
+                    max_room_dimension_feet=100,
+                ),
             ),
         )
     )

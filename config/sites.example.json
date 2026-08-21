@@ -7,7 +7,23 @@
         "https://exampleflooring.com"
       ],
       "position": "bottom-right",
-      "chatbot_title": "Flooring Assistant"
+      "chatbot_title": "Flooring Assistant",
+      "theme": {
+        "primary_color": "#176b45",
+        "primary_text_color": "#ffffff",
+        "background_color": "#ffffff",
+        "body_text_color": "#17211b",
+        "muted_background_color": "#f5f8f6",
+        "launcher_text": "Find my floor",
+        "welcome_message": "Tell me about your room and the flooring look you prefer.",
+        "logo_url": "https://exampleflooring.com/logo.png"
+      },
+      "calculator": {
+        "enabled": true,
+        "default_waste_percent": 10,
+        "max_room_dimension_feet": 500,
+        "show_price_estimate": true
+      }
     },
     {
       "site_code": "CLIENT002",

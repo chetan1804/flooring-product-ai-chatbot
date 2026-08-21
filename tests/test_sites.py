@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from flooring_catalog.sites import SiteConfig, SiteRegistry, SiteRegistrySettings
+from flooring_catalog.sites import SiteConfig, SiteRegistry, SiteRegistrySettings, WidgetTheme
 
 
 def site(site_code: str = "CLIENT001", domain: str = "https://shop.example") -> SiteConfig:
@@ -29,6 +29,8 @@ def test_site_config_normalizes_origins_and_validates_storefront() -> None:
         "https://shop.example",
         "https://www.shop.example",
     )
+    assert config.theme.launcher_text == "Chat with us"
+    assert config.calculator.default_waste_percent == 10
     with pytest.raises(ValidationError, match="included"):
         SiteConfig(
             site_code="CLIENT001",
@@ -56,6 +58,25 @@ def test_site_config_rejects_unsafe_values(values: dict[str, object]) -> None:
     defaults.update(values)
     with pytest.raises(ValidationError):
         SiteConfig.model_validate(defaults)
+
+
+def test_widget_theme_validates_colors_contrast_copy_and_logo() -> None:
+    theme = WidgetTheme(
+        primary_color="#5b2c6f",
+        primary_text_color="#ffffff",
+        launcher_text="Find my floor",
+        welcome_message="Welcome to the flooring guide.",
+        logo_url="https://cdn.example/brand/logo.svg",
+    )
+    assert theme.launcher_text == "Find my floor"
+    assert str(theme.logo_url) == "https://cdn.example/brand/logo.svg"
+
+    with pytest.raises(ValidationError, match="contrast"):
+        WidgetTheme(primary_color="#ffffff", primary_text_color="#eeeeee")
+    with pytest.raises(ValidationError):
+        WidgetTheme(primary_color="green")
+    with pytest.raises(ValidationError, match="credentials"):
+        WidgetTheme(logo_url="https://user:secret@cdn.example/logo.svg")
 
 
 def test_registry_rejects_duplicates_and_collects_origins() -> None:

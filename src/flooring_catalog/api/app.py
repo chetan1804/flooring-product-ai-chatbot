@@ -179,6 +179,8 @@ def create_app(
             site_code=site.site_code,
             chatbot_title=site.chatbot_title,
             position=site.position,
+            theme=site.theme,
+            calculator=site.calculator,
         )
 
     @app.post(
